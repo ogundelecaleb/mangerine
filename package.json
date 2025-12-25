@@ -1,0 +1,52 @@
+{
+  "name": "mang",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --port 8083",
+    "android": "expo start --android --port 8083",
+    "ios": "expo start --ios --port 8083",
+    "web": "expo start --web --port 8083",
+    "build:dev": "eas build --profile development",
+    "build:preview": "eas build --profile preview",
+    "build:production": "eas build --profile production"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.1.0",
+    "@hookform/resolvers": "^5.0.1",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-navigation/bottom-tabs": "^6.6.1",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.9.26",
+    "@react-navigation/stack": "^6.3.16",
+    "@reduxjs/toolkit": "^2.7.0",
+    "@shopify/restyle": "^2.4.5",
+    "expo": "~53.0.0",
+    "expo-dev-client": "~4.0.0",
+    "expo-font": "~12.0.0",
+    "expo-image-manipulator": "^14.0.8",
+    "expo-image-picker": "^17.0.10",
+    "expo-splash-screen": "^31.0.13",
+    "expo-status-bar": "~2.2.3",
+    "lodash": "^4.17.21",
+    "moment": "^2.30.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-hook-form": "^7.55.0",
+    "react-native": "0.79.6",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-vector-icons": "^10.2.0",
+    "react-redux": "^9.2.0",
+    "redux-persist": "^6.0.0",
+    "with-alpha-hex": "^1.0.6",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.16",
+    "@types/react": "~19.0.10",
+    "@types/react-native-vector-icons": "^6.4.18",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}

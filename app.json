@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Mangerine",
+    "slug": "mangerine",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mangerine.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.mangerine.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-font",
+      "expo-splash-screen"
+    ],
+    "scheme": "mangerine",
+    "extra": {
+      "eas": {
+        "projectId": "39bbc663-3a09-427f-b29b-5febc8b452c9"
+      }
+    },
+    "owner": "mangerine"
+  }
+}

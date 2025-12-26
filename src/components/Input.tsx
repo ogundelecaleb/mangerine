@@ -1,33 +1,39 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, ReactNode } from 'react';
 import { TextInput, TextInputProps } from 'react-native';
-import { useThemeColors } from '../hooks/useTheme';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../utils/theme';
 import Box from './Box';
 import Text from './Text';
 
 interface Props extends TextInputProps {
-  // Input label
   label?: string;
-  // Error message to display
   error?: string;
-  // Whether field is required
   required?: boolean;
-  // Container height
   height?: number;
+  rightComponent?: ReactNode;
+  leftComponent?: ReactNode;
+  noMargin?: boolean;
+  backgroundColor?: string;
+  borderWidth?: number;
 }
 
-const Input = forwardRef<TextInput, Props>(({
+const Input = forwardRef<TextInput, Props>(({ 
   label,
   error,
   required,
   height = 50,
+  rightComponent,
+  leftComponent,
+  noMargin,
+  backgroundColor,
+  borderWidth,
   style,
   ...props
 }, ref) => {
-  const { foreground, border, placeholder, danger, primary_background } = useThemeColors();
+  const theme = useTheme<Theme>();
 
   return (
-    <Box marginBottom="m">
-      {/* Label */}
+    <Box marginBottom={noMargin ? undefined : "m"}>
       {label && (
         <Box marginBottom="s">
           <Text variant="medium" fontSize={14}>
@@ -37,31 +43,33 @@ const Input = forwardRef<TextInput, Props>(({
         </Box>
       )}
       
-      {/* Input field */}
       <Box
-        backgroundColor="primary_background"
-        borderWidth={1}
+        backgroundColor={backgroundColor || "primary_background"}
+        borderWidth={borderWidth ?? 1}
         borderColor={error ? "danger" : "faded_border"}
         borderRadius={8}
         paddingHorizontal="m"
-        height={height}>
+        height={height}
+        flexDirection="row"
+        alignItems="center">
+        {leftComponent}
         <TextInput
           ref={ref}
           style={[
             {
               flex: 1,
-              color: foreground,
+              color: theme.colors.foreground,
               fontSize: 14,
               fontFamily: 'Outfit-Regular',
             },
             style,
           ]}
-          placeholderTextColor={placeholder}
+          placeholderTextColor={theme.colors.placeholder}
           {...props}
         />
+        {rightComponent}
       </Box>
       
-      {/* Error message */}
       {error && (
         <Box marginTop="s">
           <Text variant="regular" fontSize={12} color="danger">

@@ -1,47 +1,49 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../utils/theme';
 import Box from './Box';
-import Text from './Text';
-import { useThemeColors } from '../hooks/useTheme';
 
 interface Props {
-  label?: string;
-  checked: boolean;
-  onPress: () => void;
-  disabled?: boolean;
+  color?: string;
+  checkColor?: string;
+  size?: number;
+  onPress?: () => void;
+  checked?: boolean;
 }
 
-const Checkbox = ({ label, checked, onPress, disabled }: Props) => {
-  const { primary, faded_border, background } = useThemeColors();
+const CheckBox = ({ checked, onPress, size = 20, color, checkColor }: Props) => {
+  const theme = useTheme<Theme>();
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={disabled}>
-      <Box flexDirection="row" alignItems="center" gap="s">
+    <Box>
+      <TouchableOpacity
+        activeOpacity={0.91}
+        testID="checkbox"
+        onPress={onPress}>
         <Box
-          width={20}
-          height={20}
-          borderRadius={4}
-          borderWidth={2}
-          borderColor={checked ? 'primary' : 'faded_border'}
-          backgroundColor={checked ? 'primary' : 'background'}
+          borderRadius={5}
+          borderWidth={1}
           justifyContent="center"
           alignItems="center"
-          opacity={disabled ? 0.5 : 1}
-        >
+          style={{
+            borderColor: color || theme.colors.primary,
+            backgroundColor: checked ? color || theme.colors.primary : undefined,
+            width: size,
+            height: size,
+          }}>
           {checked && (
-            <Ionicons name="checkmark" size={12} color={background} />
+            <Ionicons
+              name={'checkmark'}
+              size={size - 6}
+              color={checked ? checkColor || theme.colors.background : theme.colors.primary}
+            />
           )}
         </Box>
-        
-        {label && (
-          <Text variant="regular" fontSize={14} opacity={disabled ? 0.5 : 1}>
-            {label}
-          </Text>
-        )}
-      </Box>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Box>
   );
 };
 
-export default Checkbox;
+export default CheckBox;

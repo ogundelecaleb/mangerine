@@ -2,7 +2,7 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { MainStack } from '../../utils/ParamList';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
@@ -30,16 +30,36 @@ const ForgotPasswordScreen = ({ navigation }: Props) => {
 
   const onSubmit = async (data: ForgotPasswordForm) => {
     try {
-      const result = await forgotPassword({ email: data.email }).unwrap();
+      const response = await forgotPassword({ email: data.email });
       
-      if (result.success) {
+      if (response?.error) {
+        const err = response as any;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
+          type: 'danger',
+        });
+        return;
+      }
+      
+      const result = (response as any)?.data;
+      if (result?.success) {
+        showMessage({
+          message: 'Reset code sent to your email',
+          type: 'success',
+        });
         navigation.navigate('ForgotPasswordOTP', {
           email: data.email,
           otpHash: result.data?.otpHash,
         });
       }
     } catch (error: any) {
-      Alert.alert('Error', error?.data?.message || 'Something went wrong');
+      showMessage({
+        message: error?.data?.message || 'Something went wrong',
+        type: 'danger',
+      });
     }
   };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { MainStack } from '../../utils/ParamList';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
@@ -34,17 +34,29 @@ const SignupScreen = ({ navigation }: Props) => {
 
   const onSubmit = async (data: SignupForm) => {
     try {
-      const result = await preSignup({ email: data.email }).unwrap();
+      console.log('Signup form data:', data);
+      console.log('Calling preSignup API with:', { email: data.email });
       
-      if (result.success) {
-        navigation.navigate('SignupOTP', {
-          email: data.email,
-          password: data.password,
-          fullName: data.fullName,
-        });
-      }
+      const result = await preSignup({ email: data.email }).unwrap();
+      console.log('PreSignup API response:', result);
+      
+      // Show success message and navigate
+      showMessage({
+        message: 'Verification code sent to your email',
+        type: 'success',
+      });
+      
+      navigation.navigate('SignupOTP', {
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+      });
     } catch (error: any) {
-      Alert.alert('Signup Failed', error?.data?.message || 'Something went wrong');
+      console.error('Signup error details:', error);
+      showMessage({
+        message: error?.data?.message || error?.message || 'Something went wrong',
+        type: 'danger',
+      });
     }
   };
 

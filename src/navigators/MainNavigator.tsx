@@ -11,6 +11,7 @@ import LoginScreen from '../screens/Authentication/LoginScreen';
 import SignupScreen from '../screens/Authentication/SignupScreen';
 import SignupOTPScreen from '../screens/Authentication/SignupOTPScreen';
 import FinishRegistrationScreen from '../screens/Authentication/FinishRegistrationScreen';
+import SignupAvatarScreen from '../screens/Authentication/SignupAvatarScreen';
 import ForgotPasswordScreen from '../screens/Authentication/ForgotPasswordScreen';
 import ForgotPasswordOTPScreen from '../screens/Authentication/ForgotPasswordOTPScreen';
 import ResetPasswordScreen from '../screens/Authentication/ResetPasswordScreen';
@@ -18,6 +19,11 @@ import ResetPasswordScreen from '../screens/Authentication/ResetPasswordScreen';
 // Import main screens
 import EditProfileScreen from '../screens/Main/EditProfileScreen';
 import SettingsScreen from '../screens/Main/SettingsScreen';
+import PostDetailsScreen from '../screens/Post/PostDetailsScreen';
+import CreatePostScreen from '../screens/Post/CreatePostScreen';
+import BookConsultationScreen from '../screens/Main/BookConsultationScreen';
+import MyConsultationScreen from '../screens/Main/MyConsultationScreen';
+import AddConsultancyScreen from '../screens/Main/AddConsultancyScreen';
 
 const Stack = createNativeStackNavigator<MainStack>();
 
@@ -39,6 +45,7 @@ const MainNavigator = () => {
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="SignupOTP" component={SignupOTPScreen} />
             <Stack.Screen name="FinishRegistration" component={FinishRegistrationScreen} />
+            <Stack.Screen name="SignupAvatar" component={SignupAvatarScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="ForgotPasswordOTP" component={ForgotPasswordOTPScreen} />
             <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
@@ -51,6 +58,12 @@ const MainNavigator = () => {
             {/* Profile and Settings screens */}
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
+            <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+            {/* <Stack.Screen name="EditPost" component={EditPostScreen} /> */}
+            <Stack.Screen name="BookConsultation" component={BookConsultationScreen} />
+            <Stack.Screen name="MyConsultation" component={MyConsultationScreen} />
+            <Stack.Screen name="AddConsultancy" component={AddConsultancyScreen} />
             
             {/* Modal screens that appear over tabs */}
             {/* <Stack.Screen name="CreatePost" component={CreatePostScreen} />

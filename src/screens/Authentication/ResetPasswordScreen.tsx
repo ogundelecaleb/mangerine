@@ -2,7 +2,7 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { MainStack } from '../../utils/ParamList';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
@@ -33,25 +33,36 @@ const ResetPasswordScreen = ({ navigation, route }: Props) => {
 
   const onSubmit = async (data: ResetPasswordForm) => {
     try {
-      const result = await changePassword({
+      const response = await changePassword({
         email,
         password: data.password,
-      }).unwrap();
+      });
 
-      if (result.success) {
-        Alert.alert(
-          'Success',
-          'Your password has been reset successfully',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Login'),
-            },
-          ]
-        );
+      if (response?.error) {
+        const err = response as any;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Failed to reset password',
+          type: 'danger',
+        });
+        return;
+      }
+      
+      const result = (response as any)?.data;
+      if (result?.success) {
+        showMessage({
+          message: 'Your password has been reset successfully',
+          type: 'success',
+        });
+        navigation.navigate('Login');
       }
     } catch (error: any) {
-      Alert.alert('Error', error?.data?.message || 'Failed to reset password');
+      showMessage({
+        message: error?.data?.message || 'Failed to reset password',
+        type: 'danger',
+      });
     }
   };
 

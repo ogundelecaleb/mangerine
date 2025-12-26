@@ -24,4 +24,182 @@ interface ProfileForm {
 }
 
 const EditProfileScreen = ({ navigation }: Props) => {
-  const { label } = useThemeColors();\n  const { data: profile } = useGetInfoQuery();\n  const [updateProfile, { isLoading }] = useUpdateProfileInfoMutation();\n  const [updateProfilePic, { isLoading: isUploadingImage }] = useUpdateProfilePicMutation();\n\n  const user = profile?.data?.user;\n\n  const { control, handleSubmit, formState: { errors } } = useForm<ProfileForm>({\n    defaultValues: {\n      fullName: user?.fullName || '',\n      occupation: user?.occupation || '',\n      location: user?.location || '',\n      bio: user?.bio || '',\n      dateOfBirth: user?.dateOfBirth || '',\n    },\n  });\n\n  const onSubmit = async (data: ProfileForm) => {\n    try {\n      const result = await updateProfile(data).unwrap();\n      if (result.success) {\n        Alert.alert('Success', 'Profile updated successfully');\n        navigation.goBack();\n      }\n    } catch (error: any) {\n      Alert.alert('Error', error?.data?.message || 'Failed to update profile');\n    }\n  };\n\n  const handleImageSelected = async (uri: string) => {\n    if (!uri) return;\n    \n    try {\n      const formData = new FormData();\n      formData.append('profilePic', {\n        uri,\n        type: 'image/jpeg',\n        name: 'profile.jpg',\n      } as any);\n      \n      const result = await updateProfilePic(formData).unwrap();\n      if (result.success) {\n        Alert.alert('Success', 'Profile picture updated successfully');\n      }\n    } catch (error: any) {\n      Alert.alert('Error', error?.data?.message || 'Failed to update profile picture');\n    }\n  };\n\n  return (\n    <BaseScreenComponent>\n      <Box flex={1} backgroundColor=\"background\">\n        {/* Header */}\n        <Box \n          flexDirection=\"row\" \n          alignItems=\"center\" \n          justifyContent=\"space-between\"\n          paddingHorizontal=\"l\"\n          paddingVertical=\"m\"\n        >\n          <TouchableOpacity onPress={() => navigation.goBack()}>\n            <Ionicons name=\"arrow-back\" size={24} color={label} />\n          </TouchableOpacity>\n          \n          <Text variant=\"bold\" fontSize={18}>\n            Edit Profile\n          </Text>\n          \n          <Box width={24} />\n        </Box>\n\n        <ScrollView showsVerticalScrollIndicator={false}>\n          <Box paddingHorizontal=\"l\" gap=\"l\">\n            {/* Profile Picture */}\n            <Box alignItems=\"center\" marginVertical=\"l\">\n              <ImagePickerComponent\n                onImageSelected={handleImageSelected}\n                currentImage={user?.avatar}\n                placeholder=\"Update Photo\"\n                size={120}\n              />\n              {isUploadingImage && (\n                <Text variant=\"regular\" fontSize={12} color=\"label\" marginTop=\"s\">\n                  Uploading...\n                </Text>\n              )}\n            </Box>\n\n            {/* Form */}\n            <Controller\n              control={control}\n              name=\"fullName\"\n              render={({ field: { onChange, onBlur, value } }) => (\n                <Input\n                  label=\"Full Name\"\n                  placeholder=\"Enter your full name\"\n                  value={value}\n                  onChangeText={onChange}\n                  onBlur={onBlur}\n                  error={errors.fullName?.message}\n                />\n              )}\n            />\n\n            <Controller\n              control={control}\n              name=\"occupation\"\n              render={({ field: { onChange, onBlur, value } }) => (\n                <Input\n                  label=\"Occupation\"\n                  placeholder=\"Enter your occupation\"\n                  value={value}\n                  onChangeText={onChange}\n                  onBlur={onBlur}\n                  error={errors.occupation?.message}\n                />\n              )}\n            />\n\n            <Controller\n              control={control}\n              name=\"location\"\n              render={({ field: { onChange, onBlur, value } }) => (\n                <Input\n                  label=\"Location\"\n                  placeholder=\"Enter your location\"\n                  value={value}\n                  onChangeText={onChange}\n                  onBlur={onBlur}\n                  error={errors.location?.message}\n                />\n              )}\n            />\n\n            <Controller\n              control={control}\n              name=\"bio\"\n              render={({ field: { onChange, onBlur, value } }) => (\n                <Input\n                  label=\"Bio\"\n                  placeholder=\"Tell us about yourself\"\n                  value={value}\n                  onChangeText={onChange}\n                  onBlur={onBlur}\n                  error={errors.bio?.message}\n                  height={100}\n                  multiline\n                />\n              )}\n            />\n\n            <Controller\n              control={control}\n              name=\"dateOfBirth\"\n              render={({ field: { onChange, onBlur, value } }) => (\n                <Input\n                  label=\"Date of Birth\"\n                  placeholder=\"YYYY-MM-DD\"\n                  value={value}\n                  onChangeText={onChange}\n                  onBlur={onBlur}\n                  error={errors.dateOfBirth?.message}\n                />\n              )}\n            />\n\n            <Button\n              displayText=\"Save Changes\"\n              onPress={handleSubmit(onSubmit)}\n              loading={isLoading}\n            />\n\n            {/* Additional Options */}\n            <Box gap=\"s\" marginTop=\"l\">\n              <TouchableOpacity onPress={() => navigation.navigate('UpdateContact' as any)}>\n                <Box \n                  flexDirection=\"row\" \n                  alignItems=\"center\" \n                  justifyContent=\"space-between\"\n                  paddingVertical=\"m\"\n                  borderBottomWidth={1}\n                  borderBottomColor=\"faded_border\"\n                >\n                  <Text variant=\"medium\" fontSize={16}>\n                    Update Contact Info\n                  </Text>\n                  <Ionicons name=\"chevron-forward\" size={20} color={label} />\n                </Box>\n              </TouchableOpacity>\n\n              <TouchableOpacity onPress={() => navigation.navigate('ManageSkills' as any)}>\n                <Box \n                  flexDirection=\"row\" \n                  alignItems=\"center\" \n                  justifyContent=\"space-between\"\n                  paddingVertical=\"m\"\n                  borderBottomWidth={1}\n                  borderBottomColor=\"faded_border\"\n                >\n                  <Text variant=\"medium\" fontSize={16}>\n                    Manage Skills\n                  </Text>\n                  <Ionicons name=\"chevron-forward\" size={20} color={label} />\n                </Box>\n              </TouchableOpacity>\n            </Box>\n          </Box>\n        </ScrollView>\n      </Box>\n    </BaseScreenComponent>\n  );\n};\n\nexport default EditProfileScreen;
+  const { label } = useThemeColors();
+  const { data: profile } = useGetInfoQuery();
+  const [updateProfile, { isLoading }] = useUpdateProfileInfoMutation();
+  const [updateProfilePic, { isLoading: isUploadingImage }] = useUpdateProfilePicMutation();
+
+  const user = profile?.data?.user;
+
+  const { control, handleSubmit, formState: { errors } } = useForm<ProfileForm>({
+    defaultValues: {
+      fullName: user?.fullName || '',
+      occupation: user?.occupation || '',
+      location: user?.location || '',
+      bio: user?.bio || '',
+      dateOfBirth: user?.dateOfBirth || '',
+    },
+  });
+
+  const onSubmit = async (data: ProfileForm) => {
+    try {
+      const result = await updateProfile(data).unwrap();
+      if (result.success) {
+        Alert.alert('Success', 'Profile updated successfully');
+        navigation.goBack();
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to update profile');
+    }
+  };
+
+  const handleImageSelected = async (uri: string) => {
+    if (!uri) return;
+    
+    try {
+      const formData = new FormData();
+      formData.append('profilePic', {
+        uri,
+        type: 'image/jpeg',
+        name: 'profile.jpg',
+      } as any);
+      
+      const result = await updateProfilePic(formData).unwrap();
+      if (result.success) {
+        Alert.alert('Success', 'Profile picture updated successfully');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error?.data?.message || 'Failed to update profile picture');
+    }
+  };
+
+  return (
+    <BaseScreenComponent>
+      <Box flex={1} backgroundColor="background">
+        {/* Header */}
+        <Box 
+          flexDirection="row" 
+          alignItems="center" 
+          justifyContent="space-between"
+          paddingHorizontal="l"
+          paddingVertical="m"
+        >
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={label} />
+          </TouchableOpacity>
+          
+          <Text variant="bold" fontSize={18}>
+            Edit Profile
+          </Text>
+          
+          <Box width={24} />
+        </Box>
+
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Box paddingHorizontal="l" gap="l">
+            {/* Profile Picture */}
+            <Box alignItems="center" marginVertical="l">
+              <ImagePickerComponent
+                onImageSelected={handleImageSelected}
+                currentImage={user?.avatar}
+                placeholder="Update Photo"
+                size={120}
+              />
+              {isUploadingImage && (
+                <Text variant="regular" fontSize={12} color="label" marginTop="s">
+                  Uploading...
+                </Text>
+              )}
+            </Box>
+
+            {/* Form */}
+            <Controller
+              control={control}
+              name="fullName"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Full Name"
+                  placeholder="Enter your full name"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.fullName?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="occupation"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Occupation"
+                  placeholder="Enter your occupation"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.occupation?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Location"
+                  placeholder="Enter your location"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.location?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="bio"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Bio"
+                  placeholder="Tell us about yourself"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.bio?.message}
+                  height={100}
+                  multiline
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="dateOfBirth"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Date of Birth"
+                  placeholder="YYYY-MM-DD"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.dateOfBirth?.message}
+                />
+              )}
+            />
+
+            <Button
+              displayText="Save Changes"
+              onPress={handleSubmit(onSubmit)}
+              loading={isLoading}
+            />
+          </Box>
+        </ScrollView>
+      </Box>
+    </BaseScreenComponent>
+  );
+};
+
+export default EditProfileScreen;

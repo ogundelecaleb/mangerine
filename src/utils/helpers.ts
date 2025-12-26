@@ -3,7 +3,7 @@ import { withAlphaHex } from 'with-alpha-hex';
 
 // Environment variables from Expo Constants
 export const {
-  BASE_URL = 'https://api.mangerine.com',
+  BASE_URL = 'https://dev.mangerine.com',
   ENV = 'development',
   APP_ID = 'com.mangerine.app',
   REDUX_KEY = 'mangerine_redux_persist',

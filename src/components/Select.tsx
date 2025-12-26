@@ -1,29 +1,31 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Modal, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Box from './Box';
 import Text from './Text';
-import { useThemeColors } from '../hooks/useTheme';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../utils/theme';
 
 interface Option {
-  label: string;
+  title: string;
   value: string;
 }
 
 interface Props {
   label?: string;
   placeholder?: string;
-  options: Option[];
+  data: Option[];
   value?: string;
   onSelect: (value: string) => void;
   error?: string;
+  required?: boolean;
 }
 
-const Select = ({ label, placeholder, options, value, onSelect, error }: Props) => {
+const Select = ({ label, placeholder, data, value, onSelect, error, required }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { foreground, primary_background, faded_border, danger, label: labelColor } = useThemeColors();
+  const theme = useTheme<Theme>();
 
-  const selectedOption = options.find(option => option.value === value);
+  const selectedOption = data.find(option => option.value === value);
 
   return (
     <Box marginBottom="m">
@@ -31,6 +33,7 @@ const Select = ({ label, placeholder, options, value, onSelect, error }: Props) 
         <Box marginBottom="s">
           <Text variant="medium" fontSize={14}>
             {label}
+            {required && <Text color="danger"> *</Text>}
           </Text>
         </Box>
       )}
@@ -52,13 +55,13 @@ const Select = ({ label, placeholder, options, value, onSelect, error }: Props) 
             fontSize={14}
             color={selectedOption ? "foreground" : "label"}
           >
-            {selectedOption?.label || placeholder || 'Select an option'}
+            {selectedOption?.title || placeholder || 'Select an option'}
           </Text>
           
-          <Ionicons 
+          <MaterialCommunityIcons 
             name={isOpen ? "chevron-up" : "chevron-down"} 
             size={20} 
-            color={labelColor} 
+            color={theme.colors.label} 
           />
         </Box>
       </TouchableOpacity>
@@ -84,7 +87,7 @@ const Select = ({ label, placeholder, options, value, onSelect, error }: Props) 
               overflow="hidden"
             >
               <FlatList
-                data={options}
+                data={data}
                 keyExtractor={(item) => item.value}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -100,7 +103,7 @@ const Select = ({ label, placeholder, options, value, onSelect, error }: Props) 
                       borderBottomColor="faded_border"
                     >
                       <Text variant="regular" fontSize={14}>
-                        {item.label}
+                        {item.title}
                       </Text>
                     </Box>
                   </TouchableOpacity>

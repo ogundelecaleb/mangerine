@@ -141,6 +141,32 @@ export const usersApi = createApi({
         params: { page, limit },
       }),
     }),
+    addConsultancy: builder.mutation<any, FormData>({
+      query: (body) => ({
+        url: '/add/consultancy',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Profile'],
+    }),
+    getConsultancy: builder.query<any, void>({
+      query: () => '/get/consultancy',
+      providesTags: ['Profile'],
+    }),
+    deleteConsultancy: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({
+        url: `/delete/consultancy/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Profile'],
+    }),
+    becomeConsultant: builder.mutation<any, void>({
+      query: () => ({
+        url: '/become/consultant',
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Profile'],
+    }),
   }),
 });
 
@@ -159,4 +185,8 @@ export const {
   useUnfollowUserMutation,
   useGetFollowersQuery,
   useGetFollowingQuery,
+  useAddConsultancyMutation,
+  useGetConsultancyQuery,
+  useDeleteConsultancyMutation,
+  useBecomeConsultantMutation,
 } = usersApi;

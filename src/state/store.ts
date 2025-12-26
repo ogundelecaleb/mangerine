@@ -6,6 +6,8 @@ import { combineReducers } from '@reduxjs/toolkit';
 // Import API services
 import { authApi } from './services/auth.service';
 import { usersApi } from './services/users.service';
+import { postsApi } from './services/posts.service';
+import { consultantsApi } from './services/consultants.service';
 
 // Import reducers
 import authReducer from './reducers/authSlice';
@@ -15,7 +17,7 @@ const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['auth'], // Only persist auth data
-  blacklist: [authApi.reducerPath, usersApi.reducerPath], // Don't persist API cache
+  blacklist: [authApi.reducerPath, usersApi.reducerPath, postsApi.reducerPath, consultantsApi.reducerPath], // Don't persist API cache
 };
 
 // Root reducer combining all slices
@@ -23,6 +25,8 @@ const rootReducer = combineReducers({
   // API services
   [authApi.reducerPath]: authApi.reducer,
   [usersApi.reducerPath]: usersApi.reducer,
+  [postsApi.reducerPath]: postsApi.reducer,
+  [consultantsApi.reducerPath]: consultantsApi.reducer,
   
   // App state slices
   auth: authReducer,
@@ -40,7 +44,9 @@ export const store = configureStore({
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
     }).concat(authApi.middleware)
-      .concat(usersApi.middleware),
+      .concat(usersApi.middleware)
+      .concat(postsApi.middleware)
+      .concat(consultantsApi.middleware),
   devTools: __DEV__,
 });
 

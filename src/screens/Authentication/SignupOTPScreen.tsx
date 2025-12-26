@@ -2,7 +2,9 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import { Ionicons } from '@expo/vector-icons';
 import { MainStack } from '../../utils/ParamList';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
@@ -11,6 +13,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { otpSchema } from '../../utils/validation';
 import { useVerifyEmailOTPMutation, useSendEmailOTPMutation } from '../../state/services/auth.service';
+import { useThemeColors } from '../../hooks/useTheme';
 
 type Props = NativeStackScreenProps<MainStack, 'SignupOTP'>;
 
@@ -20,6 +23,7 @@ interface OTPForm {
 
 const SignupOTPScreen = ({ navigation, route }: Props) => {
   const { email, password, fullName } = route.params;
+  const { label } = useThemeColors();
   const [verifyOTP, { isLoading }] = useVerifyEmailOTPMutation();
   const [resendOTP, { isLoading: isResending }] = useSendEmailOTPMutation();
 
@@ -37,24 +41,39 @@ const SignupOTPScreen = ({ navigation, route }: Props) => {
         email,
       }).unwrap();
 
-      if (result.success) {
-        navigation.navigate('FinishRegistration', {
-          email,
-          password,
-          fullName,
-        });
-      }
+      console.log('OTP verification result:', result);
+      
+      showMessage({
+        message: 'Email verified successfully!',
+        type: 'success',
+      });
+      
+      navigation.navigate('FinishRegistration', {
+        email,
+        password,
+        fullName,
+      });
     } catch (error: any) {
-      Alert.alert('Verification Failed', error?.data?.message || 'Invalid OTP code');
+      console.error('OTP verification error:', error);
+      showMessage({
+        message: error?.data?.message || 'Invalid OTP code',
+        type: 'danger',
+      });
     }
   };
 
   const handleResendOTP = async () => {
     try {
       await resendOTP({ email }).unwrap();
-      Alert.alert('Success', 'OTP code has been resent to your email');
+      showMessage({
+        message: 'OTP code has been resent to your email',
+        type: 'success',
+      });
     } catch (error: any) {
-      Alert.alert('Error', error?.data?.message || 'Failed to resend OTP');
+      showMessage({
+        message: error?.data?.message || 'Failed to resend OTP',
+        type: 'danger',
+      });
     }
   };
 

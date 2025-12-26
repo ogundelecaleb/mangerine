@@ -4,12 +4,11 @@ import { BottomTabList } from '../utils/ParamList';
 import { useThemeColors } from '../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 
-// Import tab screens (will be created in later phases)
-// import HomeScreen from '../screens/Tabs/HomeScreen';
-// import ConsultantScreen from '../screens/Tabs/ConsultantScreen';
+// Import tab screens
+import HomeScreen from '../screens/Tabs/HomeScreen';
+import ConsultantScreen from '../screens/Tabs/ConsultantScreen';
 // import MessageScreen from '../screens/Tabs/MessageScreen';
 // import CommunitiesScreen from '../screens/Tabs/CommunitiesScreen';
-// import ProfileScreen from '../screens/Tabs/ProfileScreen';
 
 // Temporary placeholder screens
 import PlaceholderScreen from '../screens/PlaceholderScreen';
@@ -75,13 +74,11 @@ const BottomTabNavigator = () => {
       
       <Tab.Screen 
         name="Home" 
-        component={PlaceholderScreen}
-        initialParams={{ title: 'Home Feed' }}
+        component={HomeScreen}
       />
       <Tab.Screen 
         name="Consultant" 
-        component={PlaceholderScreen}
-        initialParams={{ title: 'Consultants' }}
+        component={ConsultantScreen}
       />
       <Tab.Screen 
         name="Message" 

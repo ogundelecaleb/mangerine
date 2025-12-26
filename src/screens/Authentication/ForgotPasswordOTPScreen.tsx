@@ -2,7 +2,7 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { MainStack } from '../../utils/ParamList';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
@@ -32,25 +32,64 @@ const ForgotPasswordOTPScreen = ({ navigation, route }: Props) => {
 
   const onSubmit = async (data: OTPForm) => {
     try {
-      const result = await verifyOTP({
+      const response = await verifyOTP({
         otpCode: data.otpCode,
         email,
-      }).unwrap();
+      });
 
-      if (result.success) {
+      if (response?.error) {
+        const err = response as any;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Invalid OTP code',
+          type: 'danger',
+        });
+        return;
+      }
+      
+      const result = (response as any)?.data;
+      if (result?.success) {
+        showMessage({
+          message: 'Code verified successfully',
+          type: 'success',
+        });
         navigation.navigate('ResetPassword', { email });
       }
     } catch (error: any) {
-      Alert.alert('Verification Failed', error?.data?.message || 'Invalid OTP code');
+      showMessage({
+        message: error?.data?.message || 'Invalid OTP code',
+        type: 'danger',
+      });
     }
   };
 
   const handleResendCode = async () => {
     try {
-      await resendCode({ email }).unwrap();
-      Alert.alert('Success', 'Reset code has been resent to your email');
+      const response = await resendCode({ email });
+      
+      if (response?.error) {
+        const err = response as any;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Failed to resend code',
+          type: 'danger',
+        });
+        return;
+      }
+      
+      showMessage({
+        message: 'Reset code has been resent to your email',
+        type: 'success',
+      });
     } catch (error: any) {
-      Alert.alert('Error', error?.data?.message || 'Failed to resend code');
+      showMessage({
+        message: error?.data?.message || 'Failed to resend code',
+        type: 'danger',
+      });
     }
   };
 

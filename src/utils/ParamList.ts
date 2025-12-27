@@ -28,7 +28,52 @@ export interface Appointment {
   consultant: Consultant;
   user: User;
   scheduledAt: string;
-  // Add more appointment properties
+  consultantId: string;
+  userId: string;
+  availabilityId: string;
+  message: string;
+  videoOption: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  timeslots: [
+    {
+      id: string;
+      startTime: string;
+      endTime: string;
+      duration: number;
+      isBooked: boolean;
+    },
+  ];
+  availability: {
+    id: string;
+    date: string;
+    isRecurring: boolean;
+  };
+}
+
+export interface Availability {
+  id: string;
+  date: string;
+  isRecurring: boolean;
+  timeslots: {
+    id: string;
+    startTime: string;
+    endTime: string;
+    duration: number;
+    isBooked: boolean;
+  }[];
+}
+
+export interface ErrorData {
+  error: {
+    status: number;
+    data: {
+      message: string;
+      error: string;
+      statusCode: number;
+    };
+  };
 }
 
 export interface Conversation {

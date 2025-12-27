@@ -24,6 +24,16 @@ import CreatePostScreen from '../screens/Post/CreatePostScreen';
 import BookConsultationScreen from '../screens/Main/BookConsultationScreen';
 import MyConsultationScreen from '../screens/Main/MyConsultationScreen';
 import AddConsultancyScreen from '../screens/Main/AddConsultancyScreen';
+import PayConsultationScreen from '../screens/Main/PayConsultationScreen';
+import RescheduleConsultationScreen from '../screens/Main/RescheduleConsultationScreen';
+import ScheduledConsultationScreen from '../screens/Main/ScheduledConsultationScreen';
+import FavoriteConsultantsScreen from '../screens/Main/FavoriteConsultantsScreen';
+import MyBusinessScreen from '../screens/Main/MyBusinessScreen';
+import MyDashboardScreen from '../screens/Main/MyDashboardScreen';
+import AvailabilitySettingsScreen from '../screens/Main/AvailabilitySettingsScreen';
+import MeetingPreferenceScreen from '../screens/Main/MeetingPreferenceScreen';
+import PricingScreen from '../screens/Main/PricingScreen';
+import CalendarViewScreen from '../screens/Main/CalendarViewScreen';
 
 const Stack = createNativeStackNavigator<MainStack>();
 
@@ -62,6 +72,16 @@ const MainNavigator = () => {
             <Stack.Screen name="CreatePost" component={CreatePostScreen} />
             {/* <Stack.Screen name="EditPost" component={EditPostScreen} /> */}
             <Stack.Screen name="BookConsultation" component={BookConsultationScreen} />
+            <Stack.Screen name="PayConsultation" component={PayConsultationScreen} />
+            <Stack.Screen name="RescheduleConsultation" component={RescheduleConsultationScreen} />
+            <Stack.Screen name="ScheduledConsultation" component={ScheduledConsultationScreen} />
+            <Stack.Screen name="FavouriteConsultants" component={FavoriteConsultantsScreen} />
+            <Stack.Screen name="MyBusiness" component={MyBusinessScreen} />
+            <Stack.Screen name="Dashboard" component={MyDashboardScreen} />
+            <Stack.Screen name="AvailabilitySettings" component={AvailabilitySettingsScreen} />
+            <Stack.Screen name="MeetingPreference" component={MeetingPreferenceScreen} />
+            <Stack.Screen name="Pricing" component={PricingScreen} />
+            <Stack.Screen name="CalendarView" component={CalendarViewScreen} />
             <Stack.Screen name="MyConsultation" component={MyConsultationScreen} />
             <Stack.Screen name="AddConsultancy" component={AddConsultancyScreen} />
             

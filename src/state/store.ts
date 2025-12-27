@@ -8,6 +8,8 @@ import { authApi } from './services/auth.service';
 import { usersApi } from './services/users.service';
 import { postsApi } from './services/posts.service';
 import { consultantsApi } from './services/consultants.service';
+import { appointmentApi } from './services/appointment.service';
+import { availabilityApi } from './services/availability.service';
 
 // Import reducers
 import authReducer from './reducers/authSlice';
@@ -17,7 +19,14 @@ const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['auth'], // Only persist auth data
-  blacklist: [authApi.reducerPath, usersApi.reducerPath, postsApi.reducerPath, consultantsApi.reducerPath], // Don't persist API cache
+  blacklist: [
+    authApi.reducerPath, 
+    usersApi.reducerPath, 
+    postsApi.reducerPath, 
+    consultantsApi.reducerPath,
+    appointmentApi.reducerPath,
+    availabilityApi.reducerPath
+  ], // Don't persist API cache
 };
 
 // Root reducer combining all slices
@@ -27,6 +36,8 @@ const rootReducer = combineReducers({
   [usersApi.reducerPath]: usersApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
   [consultantsApi.reducerPath]: consultantsApi.reducer,
+  [appointmentApi.reducerPath]: appointmentApi.reducer,
+  [availabilityApi.reducerPath]: availabilityApi.reducer,
   
   // App state slices
   auth: authReducer,
@@ -46,7 +57,9 @@ export const store = configureStore({
     }).concat(authApi.middleware)
       .concat(usersApi.middleware)
       .concat(postsApi.middleware)
-      .concat(consultantsApi.middleware),
+      .concat(consultantsApi.middleware)
+      .concat(appointmentApi.middleware)
+      .concat(availabilityApi.middleware),
   devTools: __DEV__,
 });
 

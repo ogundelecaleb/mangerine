@@ -15,6 +15,7 @@ interface Props extends TextInputProps {
   noMargin?: boolean;
   backgroundColor?: string;
   borderWidth?: number;
+  subtext?: string;
 }
 
 const Input = forwardRef<TextInput, Props>(({ 
@@ -27,6 +28,7 @@ const Input = forwardRef<TextInput, Props>(({
   noMargin,
   backgroundColor,
   borderWidth,
+  subtext,
   style,
   ...props
 }, ref) => {
@@ -74,6 +76,14 @@ const Input = forwardRef<TextInput, Props>(({
         <Box marginTop="s">
           <Text variant="regular" fontSize={12} color="danger">
             {error}
+          </Text>
+        </Box>
+      )}
+      
+      {subtext && !error && (
+        <Box marginTop="s">
+          <Text variant="regular" fontSize={12} color="label">
+            {subtext}
           </Text>
         </Box>
       )}

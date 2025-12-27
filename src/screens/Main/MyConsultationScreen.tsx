@@ -206,38 +206,19 @@ const MyConsultationScreen = ({ navigation }: Props) => {
 
       <Box flexDirection="row" gap="s">
         {item.status === 'pending' && (
-          <>
-            <Box flex={1}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('RescheduleConsultation', { 
-                  appointment: item 
-                })}>
-                <Box
-                  backgroundColor="faded"
-                  borderRadius={8}
-                  padding="s"
-                  alignItems="center">
-                  <Text variant="medium" color="foreground">
-                    Reschedule
-                  </Text>
-                </Box>
-              </TouchableOpacity>
-            </Box>
-            
-            <Box flex={1}>
-              <TouchableOpacity onPress={() => handleCancelConsultation(item.id)}>
-                <Box
-                  backgroundColor="danger"
-                  borderRadius={8}
-                  padding="s"
-                  alignItems="center">
-                  <Text variant="medium" color="white">
-                    Cancel
-                  </Text>
-                </Box>
-              </TouchableOpacity>
-            </Box>
-          </>
+          <Box flex={1}>
+            <TouchableOpacity onPress={() => handleCancelConsultation(item.id)}>
+              <Box
+                backgroundColor="danger"
+                borderRadius={8}
+                padding="s"
+                alignItems="center">
+                <Text variant="medium" color="white">
+                  Cancel
+                </Text>
+              </Box>
+            </TouchableOpacity>
+          </Box>
         )}
         
         {item.status === 'confirmed' && (

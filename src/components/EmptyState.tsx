@@ -1,42 +1,48 @@
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import Box from './Box';
+import ScaledImage from './ScaledImage';
 import Text from './Text';
 import Button from './Button';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useThemeColors } from '../hooks/useTheme';
 
 interface Props {
-  icon?: keyof typeof Ionicons.glyphMap;
-  title: string;
-  description?: string;
-  actionText?: string;
-  onAction?: () => void;
+  subtitle?: string;
+  buttonText?: string;
+  doSomething?: () => void;
 }
 
-const EmptyState = ({ icon = 'folder-open-outline', title, description, actionText, onAction }: Props) => {
-  const { label } = useThemeColors();
+const EmptyState = ({ subtitle, doSomething, buttonText }: Props) => {
+  const { background } = useThemeColors();
 
   return (
-    <Box flex={1} justifyContent="center" alignItems="center" paddingHorizontal="l" gap="l">
-      <Box alignItems="center" gap="m">
-        <Ionicons name={icon} size={64} color={label} />
-        
-        <Text variant="bold" fontSize={20} textAlign="center">
-          {title}
-        </Text>
-        
-        {description && (
-          <Text variant="regular" fontSize={16} color="label" textAlign="center">
-            {description}
+    <Box alignItems="center" gap="m">
+      <ScaledImage
+        width={167}
+        source={require('../assets/images/empty-state.png')}
+      />
+      {subtitle && (
+        <Box>
+          <Text textAlign="center" fontSize={16}>
+            {subtitle}
           </Text>
-        )}
-      </Box>
-      
-      {actionText && onAction && (
-        <Button 
-          displayText={actionText}
-          onPress={onAction}
-        />
+        </Box>
+      )}
+      {buttonText && doSomething && (
+        <Box width={167}>
+          <Button onPress={doSomething}>
+            <Box flexDirection="row" alignItems="center" gap="s">
+              <MaterialCommunityIcons
+                name="plus"
+                size={24}
+                color={background}
+              />
+              <Text color="background" variant="bold" fontSize={12}>
+                {buttonText}
+              </Text>
+            </Box>
+          </Button>
+        </Box>
       )}
     </Box>
   );

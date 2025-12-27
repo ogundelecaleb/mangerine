@@ -15,6 +15,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { orderBy } from 'lodash';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch } from 'react-redux';
 
 import Box from '../../components/Box';
 import Text from '../../components/Text';
@@ -22,10 +23,13 @@ import BaseScreenComponent from '../../components/BaseScreenComponent';
 import BottomTabHeader from '../../components/BottomTabHeader';
 import PostItem from '../../components/PostItem';
 import EmptyState from '../../components/EmptyState';
+import ConfirmModal from '../../components/ConfirmModal';
 import { BottomTabList, MainStack } from '../../utils/ParamList';
-import { useTheme } from '@shopify/restyle';
-import { Theme } from '../../utils/theme';
+import { useThemeColors } from '../../hooks/useTheme';
 import { usePaginatedPostsMutation } from '../../state/services/posts.service';
+import { useBecomeConsultantMutation } from '../../state/services/users.service';
+import { useAuth } from '../../state/hooks/user.hook';
+import { setAuthTrigger } from '../../state/reducers/authSlice';
 
 interface Post {
   id: string;
@@ -49,13 +53,17 @@ interface Props extends BottomTabScreenProps<BottomTabList, 'Home'> {}
 const HomeScreen = ({}: Props) => {
   const mainNavigation = useNavigation<NativeStackNavigationProp<MainStack, 'Tabs'>>();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const theme = useTheme<Theme>();
+  const { foreground_primary } = useThemeColors();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [getPosts, { isLoading }] = usePaginatedPostsMutation();
   const limit = 50;
-  const [localPosts, setLocalPosts] = useState<Post[]>([]);
+  const [localPosts, setlocalPosts] = useState<Post[]>([]);
   const [search, setSearch] = useState('');
+  const [confirmConsultant, setConfirmConsultant] = useState(false);
+  const { user } = useAuth();
+  const [become, {}] = useBecomeConsultantMutation();
+  const dispatch = useDispatch();
 
   const loadPaginated = useCallback(async () => {
     try {
@@ -66,15 +74,16 @@ const HomeScreen = ({}: Props) => {
         },
       });
       
+      console.log('response', JSON.stringify(response));
       if ((response as any)?.error) {
         return;
       }
       
       setTotalPages((response as any)?.data?.data?.totalPages || 1);
       if (page === 1) {
-        setLocalPosts((response as any)?.data?.data?.items || []);
+        setlocalPosts((response as any)?.data?.data?.items || []);
       } else {
-        setLocalPosts(x => [
+        setlocalPosts(x => [
           ...x,
           ...((response as any)?.data?.data?.items || []),
         ]);
@@ -110,6 +119,14 @@ const HomeScreen = ({}: Props) => {
     loadPaginated();
   }, [loadPaginated]);
 
+  useEffect(() => {
+    if (!user?.isConsultant) {
+      setTimeout(() => {
+        setConfirmConsultant(true);
+      }, 2000);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadPaginated();
@@ -121,6 +138,29 @@ const HomeScreen = ({}: Props) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{ flex: 1 }}>
         <Box flex={1}>
           <SafeAreaView style={{ flex: 1 }}>
+            <ConfirmModal
+              title="Have knowledge or skills to share?"
+              closeModal={() => setConfirmConsultant(false)}
+              isVisible={confirmConsultant}
+              subtitle="Join our community of consultants and start earning by helping others. Set your own hours, choose your rates, and make an impact."
+              confirmButton="Become a consultant"
+              cancelButton="Not Now"
+              confirm={() => {
+                setConfirmConsultant(false);
+                setTimeout(async () => {
+                  try {
+                    await become({});
+                    dispatch(
+                      setAuthTrigger({
+                        trigger: true,
+                      }),
+                    );
+                  } catch (error) {
+                    console.log('become error:', error);
+                  }
+                }, 900);
+              }}
+            />
             <KeyboardAvoidingView
               keyboardVerticalOffset={20}
               behavior={Platform.OS === 'ios' ? 'height' : 'padding'}
@@ -136,7 +176,7 @@ const HomeScreen = ({}: Props) => {
                     <Box alignItems="center" padding="l">
                       <ActivityIndicator
                         size="small"
-                        color={theme.colors.foreground_primary}
+                        color={foreground_primary}
                       />
                     </Box>
                   )}
@@ -171,9 +211,9 @@ const HomeScreen = ({}: Props) => {
                     ListEmptyComponent={
                       <Box>
                         <EmptyState
-                          title="No posts here yet"
-                          actionText="Create Post"
-                          onAction={() =>
+                          subtitle="No posts here yet"
+                          buttonText="Create Post"
+                          doSomething={() =>
                             mainNavigation.navigate('CreatePost')
                           }
                         />

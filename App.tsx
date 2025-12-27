@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text as RNText } from 'react-native';
 import { ThemeProvider } from '@shopify/restyle';
@@ -10,6 +10,7 @@ import { useFonts, Outfit_300Light, Outfit_400Regular, Outfit_500Medium, Outfit_
 import theme from './src/utils/theme';
 import MainNavigator from './src/navigators/MainNavigator';
 import { store, persistor } from './src/state/store';
+import logoutUser from './src/utils/logout';
 
 const LoadingScreen = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -26,6 +27,11 @@ export default function App() {
     'Outfit-Bold': Outfit_700Bold,
     'Outfit-ExtraBold': Outfit_800ExtraBold,
   });
+
+  useEffect(() => {
+    // Auto logout to clear storage and show auth screens
+    logoutUser();
+  }, []);
 
   if (!fontsLoaded) {
     return <LoadingScreen />;

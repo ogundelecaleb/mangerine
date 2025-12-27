@@ -5,6 +5,7 @@ interface User {
   email: string;
   fullName: string;
   avatar?: string;
+  isConsultant?: boolean;
 }
 
 interface AuthState {
@@ -12,6 +13,8 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  authTrigger?: boolean;
+  authBlocked?: boolean;
 }
 
 const initialState: AuthState = {
@@ -19,6 +22,8 @@ const initialState: AuthState = {
   token: null,
   isAuthenticated: false,
   isLoading: false,
+  authTrigger: false,
+  authBlocked: false,
 };
 
 const authSlice = createSlice({
@@ -38,8 +43,14 @@ const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+    setAuthTrigger: (state, action: PayloadAction<{ trigger: boolean }>) => {
+      state.authTrigger = action.payload.trigger;
+    },
+    setAuthBlocked: (state, action: PayloadAction<{ value: boolean }>) => {
+      state.authBlocked = action.payload.value;
+    },
   },
 });
 
-export const { setCredentials, logout, setLoading } = authSlice.actions;
+export const { setCredentials, logout, setLoading, setAuthTrigger, setAuthBlocked } = authSlice.actions;
 export default authSlice.reducer;

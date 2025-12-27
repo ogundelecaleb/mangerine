@@ -15,6 +15,7 @@ interface Props extends TextInputProps {
   noMargin?: boolean;
   backgroundColor?: string;
   borderWidth?: number;
+  borderColor?: string;
   subtext?: string;
 }
 
@@ -28,6 +29,7 @@ const Input = forwardRef<TextInput, Props>(({
   noMargin,
   backgroundColor,
   borderWidth,
+  borderColor,
   subtext,
   style,
   ...props
@@ -48,7 +50,7 @@ const Input = forwardRef<TextInput, Props>(({
       <Box
         backgroundColor={backgroundColor || "primary_background"}
         borderWidth={borderWidth ?? 1}
-        borderColor={error ? "danger" : "faded_border"}
+        borderColor={error ? "danger" : borderColor || "faded_border"}
         borderRadius={8}
         paddingHorizontal="m"
         height={height}

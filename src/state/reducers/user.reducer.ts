@@ -1,15 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import {
-  Consultancy,
-  Education,
-  Experience,
-  Interest,
-  Language,
-  Skill,
-  User,
-  UserType,
-} from '@/utils/types';
+import { User } from '../../utils/ParamList';
 
 
 export const examplePricingData = {
@@ -29,14 +20,14 @@ type AuthState = {
   tokenExpiration?: string;
   authBlocked?: boolean;
   authTrigger?: boolean;
-  interests: Interest[];
-  userTypes: UserType[];
-  skills?: Skill[];
-  education?: Education[];
-  experience?: Experience[];
-  languages?: Language[];
+  interests: any[];
+  userTypes: any[];
+  skills?: any[];
+  education?: any[];
+  experience?: any[];
+  languages?: any[];
   followers?: User[];
-  services?: Consultancy[];
+  services?: any[];
   follows?: User[];
   followerCount?: number;
   followsCount?: number;

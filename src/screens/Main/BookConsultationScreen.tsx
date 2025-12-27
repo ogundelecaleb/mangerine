@@ -1,362 +1,477 @@
-import {
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Box from '../../components/Box';
+import BaseScreenComponent from '../../components/BaseScreenComponent';
+import { MainStack } from '../../utils/ParamList';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { showMessage } from 'react-native-flash-message';
-import moment from 'moment';
-
-import Box from '../../components/Box';
 import Text from '../../components/Text';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
-import BaseScreenComponent from '../../components/BaseScreenComponent';
-import { MainStack } from '../../utils/ParamList';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import moment from 'moment';
+import { useGetConsultantAvailabilityMutation } from '../../state/services/availability.service';
+import { Availability, ErrorData } from '../../utils/ParamList';
+import { showMessage } from 'react-native-flash-message';
+import { useBookAppointmentMutation } from '../../state/services/appointment.service';
+import { useAuth } from '../../state/hooks/user.hook';
+import { useDispatch } from 'react-redux';
+import { setAuthTrigger } from '../../state/reducers/user.reducer';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
-import { useAppSelector } from '../../state/hooks/redux';
-import { useBookConsultationMutation } from '../../state/services/consultants.service';
+import CheckBox from '@/components/Checkbox';
 
-interface Consultant {
-  id: string;
-  fullName: string;
-  title?: string;
-  profilePics?: string;
-  bio?: string;
-  hourlyRate?: number;
-  rating?: number;
-  specialization?: string;
-  isVerified?: boolean;
-  location?: string;
-}
+LocaleConfig.locales.en = {
+  monthNames: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  monthNamesShort: [
+    'Jan',
+    'Feb.',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sept',
+    'Oct',
+    'Nov',
+    'Déc',
+  ],
+  dayNames: [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ],
 
-type Props = NativeStackScreenProps<MainStack, 'BookConsultation'>;
+  dayNamesShort: ['S', 'M', 'T', 'W', 'TH', 'F', 'S'],
+  today: 'Today',
+};
 
-const BookConsultationScreen = ({ navigation, route }: Props) => {
-  const { consultant } = route.params;
+LocaleConfig.defaultLocale = 'en';
+
+const BookConsultationScreen = ({
+  navigation,
+  route,
+}: NativeStackScreenProps<MainStack, 'BookConsultation'>) => {
   const theme = useTheme<Theme>();
-  const user = useAppSelector(state => state.auth.user);
-  const [bookConsultation, { isLoading }] = useBookConsultationMutation();
-  
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const [duration, setDuration] = useState('60');
+  const { user } = useAuth();
+  const [selectedTime, setSelectedTime] = useState<string[]>([]);
   const [message, setMessage] = useState('');
-  const [videoRecording, setVideoRecording] = useState(false);
+  const [video, setVideo] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [markedDate, setMarkedDate] = useState('');
+  const [activeMonth, setActiveMonth] = useState(moment().format('YYYY-MM-DD'));
+  const [getAvailability, { isLoading: availabilityLoading }] =
+    useGetConsultantAvailabilityMutation();
+  const [createBooking, { isLoading }] = useBookAppointmentMutation();
+  const [availability, setAvailability] = useState<Availability[]>([]);
+  const fullMonth = useMemo(
+    () =>
+      Array.from(
+        {
+          length: moment(activeMonth).daysInMonth(),
+        },
+        (_, i) => ({
+          index: i,
+          dateString:
+            moment(activeMonth).format('YYYY-MM') +
+            '-' +
+            (i <= 8 ? `0${i + 1}` : `${i + 1}`),
+        }),
+      ),
+    [activeMonth],
+  );
+  const dispatch = useDispatch();
 
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', 
-    '14:00', '15:00', '16:00', '17:00', '18:00'
-  ];
+  const availableMarkedDate = useMemo(() => {
+    const transformedAvailability = availability.map(availabledate => ({
+      [availabledate.date]: {
+        marked: true,
+        dotColor:
+          markedDate === availabledate.date ? theme.colors.primary : undefined,
+        selected: markedDate === availabledate.date,
+      },
+    }));
+    return Object.values({
+      ...transformedAvailability.flat(),
+    }).reduce(
+      (
+        acc: {
+          [x: string]: {
+            marked: boolean;
+            dotColor: string | undefined;
+          };
+        },
+        obj,
+      ) => {
+        const [key, value] = Object.entries(obj)[0];
+        acc[key] = value;
+        return acc;
+      },
+      {},
+    );
+  }, [availability, theme.colors.primary, markedDate]);
 
-  const durations = [
-    { label: '30 minutes', value: '30', price: 50 },
-    { label: '60 minutes', value: '60', price: 75 },
-    { label: '90 minutes', value: '90', price: 100 },
-    { label: '120 minutes', value: '120', price: 120 },
-  ];
+  const inactiveDates = useMemo(() => {
+    const stringAvailableDates = Object.keys(availableMarkedDate || {});
 
-  const selectedDuration = durations.find(d => d.value === duration);
-  const totalPrice = (selectedDuration?.price || 0) + (videoRecording ? 5 : 0);
+    return fullMonth.filter(d => {
+      return !stringAvailableDates.includes(d.dateString);
+    });
+  }, [availableMarkedDate, fullMonth]);
 
-  const handleBooking = useCallback(async () => {
+  const loadConsultancy = useCallback(async () => {
     try {
-      if (!selectedDate || !selectedTime || !duration) {
-        showMessage({
-          message: 'Please fill in all required fields',
-          type: 'warning',
-        });
-        return;
-      }
-
-      const response = await bookConsultation({
-        body: {
-          consultantId: consultant.id,
-          userId: user?.id,
-          date: selectedDate,
-          time: selectedTime,
-          duration: parseInt(duration),
-          message: message.trim(),
-          videoRecording,
-          totalAmount: totalPrice,
+      const response = await getAvailability({
+        params: {
+          userId: route?.params?.consultant?.id!,
+          startDate: moment(activeMonth).startOf('month').format('YYYY/MM/DD'),
+          endDate: moment(activeMonth).endOf('month').format('YYYY/MM/DD'),
         },
       });
-
+      
       if (response?.error) {
-        const err = response as any;
+        const err = response as ErrorData;
         showMessage({
-          message: err?.error?.data?.message || 'Failed to book consultation',
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
           type: 'danger',
         });
         return;
       }
+      setAvailability((response as any)?.data?.data || []);
+    } catch (error) {
+      console.log('get availability error', JSON.stringify(error));
+    }
+  }, [getAvailability, route, activeMonth]);
 
+  useEffect(() => {
+    loadConsultancy();
+  }, [loadConsultancy]);
+
+  const bookAppointment = useCallback(async () => {
+    try {
+      const response = await createBooking({
+        body: {
+          availabilityId: availability.find(a => a.date === markedDate)?.id!,
+          consultantId: route?.params?.consultant?.id,
+          message,
+          timeslots: selectedTime,
+          userId: user?.id!,
+          videoOption: video,
+        },
+      });
+      
+      if (response?.error) {
+        const err = response as ErrorData;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
+          type: 'danger',
+        });
+        return;
+      }
+      dispatch(
+        setAuthTrigger({
+          trigger: true,
+        }),
+      );
+      navigation?.goBack();
       showMessage({
-        message: 'Consultation booked successfully!',
+        message: 'You have successfully created a booking',
         type: 'success',
       });
-
-      navigation.navigate('MyConsultation');
     } catch (error) {
-      console.log('booking error:', error);
-      showMessage({
-        message: 'Failed to book consultation',
-        type: 'danger',
-      });
+      console.log('book error:', error);
     }
   }, [
-    selectedDate,
-    selectedTime,
-    duration,
+    availability,
+    createBooking,
+    dispatch,
+    markedDate,
     message,
-    videoRecording,
-    totalPrice,
-    consultant.id,
-    user?.id,
-    bookConsultation,
     navigation,
+    route?.params?.consultant?.id,
+    selectedTime,
+    user?.id,
+    video,
   ]);
 
   return (
     <BaseScreenComponent>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Box flex={1}>
-          {/* Header */}
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            paddingHorizontal="l"
-            paddingVertical="m"
-            gap="m">
-            <TouchableOpacity onPress={navigation.goBack}>
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={24}
-                color={theme.colors.foreground}
-              />
-            </TouchableOpacity>
-            
-            <Box flex={1} alignItems="center">
-              <Text variant="semibold" fontSize={18}>
-                Book Consultation
-              </Text>
-            </Box>
-            
-            <Box width={24} />
-          </Box>
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <Box padding="l" gap="l">
-              {/* Consultant Info */}
-              <Box
-                backgroundColor="faded"
-                borderRadius={12}
-                padding="m"
-                flexDirection="row"
-                gap="m">
-                <Box
-                  width={60}
-                  height={60}
-                  borderRadius={30}
-                  backgroundColor="background"
-                  justifyContent="center"
-                  alignItems="center">
-                  <Text variant="bold" fontSize={20}>
-                    {consultant.fullName.charAt(0)}
-                  </Text>
-                </Box>
-                
-                <Box flex={1}>
-                  <Text variant="semibold" fontSize={16}>
-                    {consultant.fullName}
-                  </Text>
-                  <Text color="label" fontSize={14}>
-                    {consultant.specialization || consultant.title}
-                  </Text>
-                  {consultant.hourlyRate && (
-                    <Text color="primary" variant="semibold">
-                      ${consultant.hourlyRate}/hour
-                    </Text>
-                  )}
-                </Box>
-              </Box>
-
-              {/* Date Selection */}
+      <Box flex={1}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <Box flex={1}>
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              paddingHorizontal="l"
+              gap="m"
+              paddingVertical="m">
               <Box>
-                <Text variant="semibold" fontSize={16} marginBottom="s">
-                  Select Date
-                </Text>
                 <TouchableOpacity
-                  onPress={() => {
-                    // For now, set tomorrow as default
-                    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
-                    setSelectedDate(tomorrow);
-                  }}>
-                  <Box
-                    borderWidth={1}
-                    borderColor="border"
-                    borderRadius={8}
-                    padding="m"
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center">
-                    <Text>
-                      {selectedDate 
-                        ? moment(selectedDate).format('MMMM DD, YYYY')
-                        : 'Choose a date'
-                      }
-                    </Text>
-                    <MaterialCommunityIcons
-                      name="calendar"
-                      size={20}
-                      color={theme.colors.label}
-                    />
-                  </Box>
+                  onPress={navigation.goBack}
+                  style={{ padding: 8, paddingLeft: 0 }}>
+                  <MaterialCommunityIcons
+                    name="chevron-left"
+                    size={24}
+                    color={theme.colors.foreground}
+                  />
                 </TouchableOpacity>
               </Box>
-
-              {/* Time Selection */}
-              {selectedDate && (
-                <Box>
-                  <Text variant="semibold" fontSize={16} marginBottom="s">
-                    Select Time
-                  </Text>
-                  <Box flexDirection="row" flexWrap="wrap" gap="s">
-                    {timeSlots.map((time) => (
-                      <TouchableOpacity
-                        key={time}
-                        onPress={() => setSelectedTime(time)}>
-                        <Box
-                          paddingHorizontal="m"
-                          paddingVertical="s"
-                          borderWidth={1}
-                          borderRadius={8}
-                          borderColor={selectedTime === time ? 'primary' : 'border'}
-                          backgroundColor={selectedTime === time ? 'primary' : 'background'}>
-                          <Text
-                            color={selectedTime === time ? 'white' : 'foreground'}
-                            variant="medium">
-                            {time}
-                          </Text>
-                        </Box>
-                      </TouchableOpacity>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {/* Duration Selection */}
-              {selectedTime && (
-                <Box>
-                  <Text variant="semibold" fontSize={16} marginBottom="s">
-                    Duration & Pricing
-                  </Text>
-                  <Box gap="s">
-                    {durations.map((dur) => (
-                      <TouchableOpacity
-                        key={dur.value}
-                        onPress={() => setDuration(dur.value)}>
-                        <Box
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          padding="m"
-                          borderWidth={1}
-                          borderRadius={8}
-                          borderColor={duration === dur.value ? 'primary' : 'border'}
-                          backgroundColor={duration === dur.value ? 'faded' : 'background'}>
-                          <Text variant="medium">{dur.label}</Text>
-                          <Text variant="semibold" color="primary">
-                            ${dur.price}
-                          </Text>
-                        </Box>
-                      </TouchableOpacity>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {/* Message */}
-              <Box>
-                <Text variant="semibold" fontSize={16} marginBottom="s">
-                  Message (Optional)
+              <Box flex={1} alignItems="center">
+                <Text
+                  variant="semibold"
+                  fontSize={20}
+                  textTransform="capitalize">
+                  Book Consultation
                 </Text>
-                <Input
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                  placeholder="Any specific topics or questions you'd like to discuss?"
-                  value={message}
-                  onChangeText={setMessage}
+              </Box>
+              <Box padding="s" opacity={0}>
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={24}
+                  color={theme.colors.foreground}
                 />
               </Box>
-
-              {/* Video Recording Option */}
-              <Box flexDirection="row" alignItems="center" gap="m">
-                <TouchableOpacity onPress={() => setVideoRecording(!videoRecording)}>
-                  <Box
-                    width={20}
-                    height={20}
-                    borderRadius={4}
-                    borderWidth={2}
-                    borderColor={videoRecording ? 'primary' : 'border'}
-                    backgroundColor={videoRecording ? 'primary' : 'background'}
-                    justifyContent="center"
-                    alignItems="center">
-                    {videoRecording && (
-                      <MaterialCommunityIcons
-                        name="check"
-                        size={14}
-                        color="white"
-                      />
+            </Box>
+            <Box flex={1} position="relative">
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Box paddingVertical="l">
+                  <Box marginHorizontal="l" gap="m" marginBottom="m">
+                    {availabilityLoading && (
+                      <Box alignItems="center">
+                        <Text fontSize={12} textAlign="center">
+                          Loading availability for the month...
+                        </Text>
+                      </Box>
+                    )}
+                    <Box>
+                      <TouchableOpacity
+                        onPress={() => setShowCalendar(!showCalendar)}>
+                        <Box
+                          borderWidth={1}
+                          borderRadius={8}
+                          borderColor="border"
+                          height={50}
+                          backgroundColor="background"
+                          overflow="hidden"
+                          flexDirection="row"
+                          paddingHorizontal={'m'}
+                          justifyContent="space-between"
+                          alignItems="center">
+                          <Text fontSize={16}>Select Date</Text>
+                          <MaterialCommunityIcons
+                            name="chevron-down"
+                            size={16}
+                            color={theme.colors.foreground}
+                          />
+                        </Box>
+                      </TouchableOpacity>
+                    </Box>
+                    {showCalendar && (
+                      <Box
+                        borderRadius={8}
+                        backgroundColor="background"
+                        elevation={4}
+                        shadowColor="foreground"
+                        shadowOpacity={0.1}
+                        shadowRadius={10}
+                        shadowOffset={{
+                          height: 4,
+                          width: 0,
+                        }}>
+                        <Calendar
+                          style={{
+                            borderWidth: 1,
+                            borderColor: theme.colors.border,
+                            height: 350,
+                          }}
+                          onMonthChange={dateData => {
+                            setActiveMonth(dateData.dateString);
+                          }}
+                          disableAllTouchEventsForInactiveDays
+                          disableAllTouchEventsForDisabledDays
+                          hideExtraDays
+                          markedDates={availableMarkedDate}
+                          monthFormat={'MMM, yyyy'}
+                          disabledDaysIndexes={inactiveDates.map(x => x.index)}
+                          minDate={moment().toISOString()}
+                          onDayPress={day => {
+                            if (
+                              availability.find(a => a.date === day.dateString)
+                            ) {
+                              setMarkedDate(day.dateString);
+                            }
+                          }}
+                          theme={{
+                            backgroundColor: 'transparent',
+                            calendarBackground: 'transparent',
+                            textSectionTitleColor: theme.colors.primary,
+                            selectedDayTextColor: '#ffffff',
+                            todayTextColor: theme.colors.foreground,
+                            dayTextColor: theme.colors.foreground,
+                            textDisabledColor: theme.colors.label,
+                            textDayFontSize: 12,
+                            textMonthFontSize: 16,
+                            textDayHeaderFontSize: 12,
+                            dotColor: theme.colors.primary,
+                            arrowColor: theme.colors.primary,
+                          }}
+                        />
+                      </Box>
                     )}
                   </Box>
-                </TouchableOpacity>
-                <Box flex={1}>
-                  <Text>
-                    Record consultation video{' '}
-                    <Text color="primary" variant="semibold">
-                      (+$5)
+                  {markedDate && (
+                    <Box marginHorizontal="l" gap="m">
+                      <Text fontSize={20} variant="semibold">
+                        Select Time
+                      </Text>
+                      <Box
+                        flexDirection="row"
+                        alignItems="flex-start"
+                        gap="l"
+                        flexWrap="wrap">
+                        {availability
+                          .find(a => a.date === markedDate)
+                          ?.timeslots?.map(t => (
+                            <TouchableOpacity
+                              disabled={t?.isBooked}
+                              key={t.id}
+                              onPress={() => {
+                                if (selectedTime.includes(t.id)) {
+                                  setSelectedTime(x =>
+                                    x.filter(xx => xx !== t.id),
+                                  );
+                                } else {
+                                  setSelectedTime(x => [...x, t.id]);
+                                }
+                              }}>
+                              <Box
+                                height={40}
+                                justifyContent="center"
+                                paddingHorizontal="m"
+                                opacity={t?.isBooked ? 0.5 : undefined}
+                                borderWidth={1}
+                                borderRadius={6}
+                                borderColor={
+                                  selectedTime.includes(t.id)
+                                    ? 'primary'
+                                    : 'label'
+                                }>
+                                <Text
+                                  fontSize={16}
+                                  variant="semibold"
+                                  color={
+                                    selectedTime.includes(t.id)
+                                      ? 'primary'
+                                      : 'label'
+                                  }>
+                                  {t.startTime}
+                                </Text>
+                              </Box>
+                            </TouchableOpacity>
+                          ))}
+                      </Box>
+                    </Box>
+                  )}
+                  {selectedTime && (
+                    <Box marginHorizontal="l" gap="m" marginTop="l">
+                      <Text fontSize={20} variant="semibold">
+                        Duration & Pricing
+                      </Text>
+                      <Box>
+                        <Input
+                          value={
+                            selectedTime?.length > 0
+                              ? `${selectedTime
+                                  .map(x =>
+                                    availability
+                                      .find(a => a.date === markedDate)
+                                      ?.timeslots.find(xx => xx.id === x),
+                                  )
+                                  .reduce(
+                                    (accum, currentValue) =>
+                                      accum + (currentValue?.duration || 0),
+                                    0,
+                                  )} minutes`
+                              : ''
+                          }
+                          editable={false}
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                  <Box marginHorizontal="l" gap="m" marginTop="l">
+                    <Text fontSize={20} variant="semibold">
+                      Message to Consultant
                     </Text>
-                  </Text>
+                    <Box>
+                      <Input
+                        textAlignVertical="top"
+                        borderColor="faded_border"
+                        height={120}
+                        multiline
+                        placeholder="Have anything to say to this consultant?"
+                        value={message}
+                        onChangeText={setMessage}
+                      />
+                    </Box>
+                  </Box>
+                  <Box
+                    marginTop="m"
+                    marginHorizontal="l"
+                    flexDirection="row"
+                    alignItems="flex-start"
+                    gap="m">
+                    <CheckBox
+                      checked={video}
+                      size={16}
+                      onPress={() => setVideo(!video)}
+                    />
+                    <Box flex={1}>
+                      <Text color="label" fontSize={16}>
+                        Send me a recorded video of the consultation at{' '}
+                        <Text fontSize={16}>$5</Text>
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Box marginHorizontal="l" marginTop="xxl" marginBottom="xl">
+                    <Button
+                      disabled={!markedDate || !selectedTime.length}
+                      loading={isLoading}
+                      onPress={bookAppointment}
+                      displayText="Book Consultation"
+                    />
+                  </Box>
                 </Box>
-              </Box>
-
-              {/* Total Price */}
-              {selectedDuration && (
-                <Box
-                  backgroundColor="faded"
-                  borderRadius={8}
-                  padding="m"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center">
-                  <Text variant="semibold" fontSize={16}>
-                    Total Amount
-                  </Text>
-                  <Text variant="bold" fontSize={18} color="primary">
-                    ${totalPrice}
-                  </Text>
-                </Box>
-              )}
-
-              {/* Book Button */}
-              <Box marginTop="m">
-                <Button
-                  displayText={isLoading ? 'Booking...' : 'Book Consultation'}
-                  onPress={handleBooking}
-                  disabled={!selectedDate || !selectedTime || !duration || isLoading}
-                  loading={isLoading}
-                />
-              </Box>
+              </ScrollView>
             </Box>
-          </ScrollView>
-        </Box>
-      </SafeAreaView>
+          </Box>
+        </SafeAreaView>
+      </Box>
     </BaseScreenComponent>
   );
 };

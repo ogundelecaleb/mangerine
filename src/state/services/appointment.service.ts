@@ -1,135 +1,119 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../store';
+import { API_BASE_URL } from '../config';
 
-const API_BASE_URL = 'https://api.mangerine.com'; // Replace with actual API URL
+export interface Appointment {
+  id: string;
+  userId: string;
+  consultantId: string;
+  availabilityId: string;
+  message?: string;
+  timeslots: Array<{
+    id: string;
+    startTime: string;
+    endTime: string;
+    duration: number;
+  }>;
+  videoOption: boolean;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  consultant: {
+    id: string;
+    fullName: string;
+    title?: string;
+    profilePics?: string;
+  };
+  availability: {
+    date: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const appointmentApi = createApi({
   reducerPath: 'appointmentApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/appointment`,
-    prepareHeaders: async (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
+    baseUrl: `${API_BASE_URL}/appointments`,
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as any).auth.token;
       if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+        headers.set('authorization', `Bearer ${token}`);
       }
       return headers;
     },
   }),
+  tagTypes: ['Appointment'],
   endpoints: (builder) => ({
-    getUserAppointments: builder.mutation({
-      query: ({
-        params,
-      }: {
-        params: {
-          userId: string;
-          status?: string;
-          page?: string | number;
-          limit?: string | number;
-        };
-      }) => ({
-        url: '/user',
-        method: 'GET',
-        params,
-      }),
-    }),
-    getMyAppointments: builder.mutation({
-      query: ({
-        params,
-      }: {
-        params: {
-          page?: string | number;
-          status?: string;
-          limit?: string | number;
-        };
-      }) => ({
-        url: '/my-appointments',
-        method: 'GET',
-        params,
-      }),
-    }),
-    getAppointmentConversations: builder.mutation({
-      query: ({
-        params,
-      }: {
-        params: {
-          page?: string | number;
-          take?: string | number;
-          order?: 'ASC' | 'DESC';
-        };
-      }) => ({
-        url: '/get/conversations',
-        method: 'GET',
-        params,
-      }),
-    }),
-    bookAppointment: builder.mutation({
-      query: ({
-        body,
-      }: {
+    bookAppointment: builder.mutation<
+      { data: Appointment },
+      {
         body: {
-          consultantId: string;
-          userId: string;
           availabilityId: string;
-          message: string;
-          videoOption: boolean;
+          consultantId: string;
+          message?: string;
           timeslots: string[];
+          userId: string;
+          videoOption: boolean;
         };
-      }) => ({
+      }
+    >({
+      query: ({ body }) => ({
         url: '/book',
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Appointment'],
     }),
-    cancelAppointment: builder.mutation({
-      query: ({
-        appointmentId,
-        userId,
-      }: {
-        appointmentId: string;
-        userId: string;
-      }) => ({
-        url: `/${appointmentId}/cancel/${userId}`,
-        method: 'POST',
-      }),
-    }),
-    rescheduleAppointment: builder.mutation({
-      query: ({
-        appointmentId,
-        userId,
-        body,
-      }: {
-        appointmentId: string;
-        userId: string;
-        body: any;
-      }) => ({
-        url: `/${appointmentId}/reschedule/${userId}`,
-        method: 'POST',
-        body,
-      }),
-    }),
-    createAppointmentConversation: builder.mutation({
-      query: ({
-        params,
-      }: {
-        params: {
-          appointmentId: string;
-          participantId: string;
+
+    rescheduleAppointment: builder.mutation<
+      { data: Appointment },
+      {
+        body: {
+          availabilityId: string;
+          consultantId: string;
+          message?: string;
+          timeslots: string[];
+          userId: string;
+          videoOption: boolean;
         };
-      }) => ({
-        url: '/create/conversation',
-        method: 'POST',
-        params,
+        appointmentId: string;
+        userId: string;
+      }
+    >({
+      query: ({ body, appointmentId, userId }) => ({
+        url: `/reschedule/${appointmentId}`,
+        method: 'PUT',
+        body: { ...body, userId },
       }),
+      invalidatesTags: ['Appointment'],
+    }),
+
+    cancelAppointment: builder.mutation<
+      { data: { message: string } },
+      { appointmentId: string; userId: string }
+    >({
+      query: ({ appointmentId, userId }) => ({
+        url: `/cancel/${appointmentId}`,
+        method: 'DELETE',
+        body: { userId },
+      }),
+      invalidatesTags: ['Appointment'],
+    }),
+
+    getMyAppointments: builder.mutation<
+      { data: Appointment[] },
+      {}
+    >({
+      query: () => ({
+        url: '/my-appointments',
+        method: 'GET',
+      }),
+      invalidatesTags: ['Appointment'],
     }),
   }),
 });
 
 export const {
   useBookAppointmentMutation,
-  useCancelAppointmentMutation,
-  useCreateAppointmentConversationMutation,
-  useGetAppointmentConversationsMutation,
-  useGetMyAppointmentsMutation,
-  useGetUserAppointmentsMutation,
   useRescheduleAppointmentMutation,
+  useCancelAppointmentMutation,
+  useGetMyAppointmentsMutation,
 } = appointmentApi;

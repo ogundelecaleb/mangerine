@@ -1,100 +1,63 @@
-import React, { useState } from 'react';
-import { Image, ImageProps } from 'react-native';
-import Box from './Box';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useEffect, useState } from 'react';
+import { Image, ImageSourcePropType } from 'react-native';
 
-interface Props extends Omit<ImageProps, 'style'> {
-  uri: string;
+interface Props {
   width?: number;
   height?: number;
-  aspectRatio?: number;
-  borderRadius?: number;
+  source?: ImageSourcePropType;
+  uri?: string;
 }
 
-const ScaledImage = ({ 
-  uri, 
-  width, 
-  height, 
-  aspectRatio, 
-  borderRadius = 0,
-  ...props 
-}: Props) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+export default ({ source, uri, ...props }: Props) => {
+  const [dimension, setDimension] = useState<{
+    width?: number;
+    height?: number;
+  }>();
 
-  const handleLoad = () => {
-    setLoading(false);
-    if (uri) {
+  useEffect(() => {
+    const getSize = (width: number, height: number) => {
+      if (props.width && !props.height) {
+        setDimension({
+          width: props.width,
+          height: height * (props.width / width),
+        });
+      } else if (!props.width && props.height) {
+        setDimension({
+          width: width * (props.height / height),
+          height: props.height,
+        });
+      } else {
+        setDimension({ width: width, height: height });
+      }
+    };
+
+    if (source) {
+      // Handle local images
+      const resolved = Image.resolveAssetSource(source);
+      getSize(resolved.width, resolved.height);
+    } else if (uri) {
+      // Handle remote images
       Image.getSize(
         uri,
-        (w, h) => {
-          setDimensions({ width: w, height: h });
-        },
-        () => setError(true)
+        (width, height) => getSize(width, height),
+        () => {
+          // Fallback dimensions if getSize fails
+          setDimension({ width: props.width || 200, height: props.height || 200 });
+        }
       );
     }
-  };
+  }, [source, uri, props.width, props.height]);
 
-  const getImageStyle = () => {
-    if (width && height) {
-      return { width, height };
-    }
-    
-    if (width && aspectRatio) {
-      return { width, height: width / aspectRatio };
-    }
-    
-    if (width && dimensions.width && dimensions.height) {
-      const calculatedHeight = (width * dimensions.height) / dimensions.width;
-      return { width, height: calculatedHeight };
-    }
-    
-    return { width: width || 200, height: height || 200 };
-  };
+  const imageSource = source || (uri ? { uri } : undefined);
 
-  if (error) {
-    return (
-      <Box 
-        {...getImageStyle()} 
-        backgroundColor="faded" 
-        justifyContent="center" 
-        alignItems="center"
-        borderRadius={borderRadius}
-      >
-        <Text variant="regular" fontSize={12} color="label">
-          Failed to load image
-        </Text>
-      </Box>
-    );
+  if (!imageSource) {
+    return null;
   }
 
   return (
-    <Box borderRadius={borderRadius} overflow="hidden">
-      {loading && (
-        <Box 
-          {...getImageStyle()} 
-          justifyContent="center" 
-          alignItems="center"
-          backgroundColor="faded"
-        >
-          <LoadingSpinner size="small" />
-        </Box>
-      )}
-      
-      <Image
-        source={{ uri }}
-        style={[
-          getImageStyle(),
-          { borderRadius },
-          loading && { position: 'absolute' }
-        ]}
-        onLoad={handleLoad}
-        onError={() => setError(true)}
-        {...props}
-      />
-    </Box>
+    <Image
+      source={imageSource}
+      style={{ height: dimension?.height, width: dimension?.width }}
+    />
   );
 };
-
-export default ScaledImage;

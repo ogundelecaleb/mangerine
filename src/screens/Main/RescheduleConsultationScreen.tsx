@@ -11,7 +11,6 @@ import { useDispatch } from 'react-redux';
 import Box from '../../components/Box';
 import Text from '../../components/Text';
 import Input from '../../components/Input';
-import Checkbox from '../../components/Checkbox';
 import Button from '../../components/Button';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import { MainStack, Availability, ErrorData } from '../../utils/ParamList';
@@ -21,6 +20,7 @@ import { setAuthTrigger } from '../../state/reducers/user.reducer';
 import { useRescheduleAppointmentMutation } from '../../state/services/appointment.service';
 import { useGetConsultantAvailabilityMutation } from '../../state/services/availability.service';
 import { useAuth } from '../../state/hooks/user.hook';
+import CheckBox from '@/components/Checkbox';
 
 LocaleConfig.locales.en = {
   monthNames: [
@@ -183,7 +183,7 @@ const RescheduleConsultationScreen = ({
           availabilityId: availability.find(a => a.date === markedDate)?.id!,
           consultantId: route?.params?.appointment?.consultantId,
           message,
-          timeslots: [selectedTime],
+          timeslots: selectedTime ? [selectedTime] : [],
           userId: user?.id!,
           videoOption: video,
         },
@@ -415,7 +415,7 @@ const RescheduleConsultationScreen = ({
                                     .find(a => a.date === markedDate)
                                     ?.timeslots?.find(
                                       s => s.id === selectedTime,
-                                    )?.duration
+                                    )?.duration || ''
                                 } minutes`
                               : ''
                           }
@@ -446,7 +446,7 @@ const RescheduleConsultationScreen = ({
                     flexDirection="row"
                     alignItems="flex-start"
                     gap="m">
-                    <Checkbox
+                    <CheckBox
                       checked={video}
                       size={16}
                       onPress={() => setVideo(!video)}

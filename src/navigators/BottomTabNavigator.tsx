@@ -1,98 +1,109 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BottomTabList } from '../utils/ParamList';
-import { useThemeColors } from '../hooks/useTheme';
-import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-// Import tab screens
+import { BottomTabList } from '../utils/ParamList';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../utils/theme';
+import BottomTabBar from '../components/BottomTabBar';
+
+import ProfileScreen from '../screens/Tabs/ProfileScreen';
 import HomeScreen from '../screens/Tabs/HomeScreen';
 import ConsultantScreen from '../screens/Tabs/ConsultantScreen';
-// import MessageScreen from '../screens/Tabs/MessageScreen';
-// import CommunitiesScreen from '../screens/Tabs/CommunitiesScreen';
-
-// Temporary placeholder screens
 import PlaceholderScreen from '../screens/PlaceholderScreen';
-
-// Import profile screen
-import ProfileScreen from '../screens/Tabs/ProfileScreen';
 
 const Tab = createBottomTabNavigator<BottomTabList>();
 
 const BottomTabNavigator = () => {
-  const { primary, label, background, primary_background } = useThemeColors();
+  const theme = useTheme<Theme>();
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      tabBar={props => <BottomTabBar {...props} />}
+      screenOptions={{
         headerShown: false,
-        tabBarIcon: ({ focused, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Consultant':
-              iconName = focused ? 'people' : 'people-outline';
-              break;
-            case 'Message':
-              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
-              break;
-            case 'Communities':
-              iconName = focused ? 'grid' : 'grid-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-            default:
-              iconName = 'help-outline';
-          }
-
-          return (
-            <Ionicons
-              name={iconName}
-              size={size}
-              color={focused ? primary : label}
-            />
-          );
-        },
-        tabBarActiveTintColor: primary,
-        tabBarInactiveTintColor: label,
-        tabBarStyle: {
-          backgroundColor: primary_background,
-          borderTopWidth: 1,
-          borderTopColor: '#E8E8E9',
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'Outfit-Medium',
-        },
-      })}>
-      
-      <Tab.Screen 
-        name="Home" 
+      }}>
+      <Tab.Screen
+        name="Home"
+        options={{
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <MaterialCommunityIcons name="home" size={20} color={theme.colors.primary} />
+            ) : (
+              <MaterialCommunityIcons name="home-outline" size={20} color={theme.colors.primary} />
+            ),
+        }}
         component={HomeScreen}
       />
-      <Tab.Screen 
-        name="Consultant" 
+      <Tab.Screen
+        name="Consultant"
         component={ConsultantScreen}
+        options={{
+          tabBarIcon: ({}) => (
+            <MaterialCommunityIcons
+              name="headset"
+              size={20}
+              color={theme.colors.primary}
+            />
+          ),
+          title: 'Consultation',
+        }}
       />
-      <Tab.Screen 
-        name="Message" 
+      <Tab.Screen
+        name="Message"
         component={PlaceholderScreen}
         initialParams={{ title: 'Messages' }}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <MaterialCommunityIcons
+                name="message"
+                size={20}
+                color={theme.colors.primary}
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="message-outline"
+                size={20}
+                color={theme.colors.primary}
+              />
+            ),
+          title: 'Messages',
+        }}
       />
-      <Tab.Screen 
-        name="Communities" 
+      <Tab.Screen
+        name="Communities"
         component={PlaceholderScreen}
         initialParams={{ title: 'Communities' }}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <MaterialCommunityIcons
+                name="account-group"
+                size={20}
+                color={theme.colors.primary}
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="account-group-outline"
+                size={20}
+                color={theme.colors.primary}
+              />
+            ),
+          title: 'Groups',
+        }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <MaterialCommunityIcons name="account" size={20} color={theme.colors.primary} />
+            ) : (
+              <MaterialCommunityIcons name="account-outline" size={20} color={theme.colors.primary} />
+            ),
+        }}
       />
     </Tab.Navigator>
   );

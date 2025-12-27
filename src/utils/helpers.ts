@@ -1,38 +1,15 @@
-import Constants from 'expo-constants';
-import { withAlphaHex } from 'with-alpha-hex';
+import { API_BASE_URL } from '../state/config';
 
-// Environment variables from Expo Constants
-export const {
-  BASE_URL = 'https://dev.mangerine.com',
-  ENV = 'development',
-  APP_ID = 'com.mangerine.app',
-  REDUX_KEY = 'mangerine_redux_persist',
-  AGORA_APP_ID,
-  AGORA_MESSAGE_KEY,
-  AGORA_APP_CERTIFICATE,
-  STRIPE_PUBLIC_KEY,
-} = Constants.expoConfig?.extra || {};
-
-export const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-export const addAlpha = (color: string, opacity: number) => {
-  return withAlphaHex(color, opacity);
+export const getUrl = (): string => {
+  return API_BASE_URL;
 };
 
-export const getUrl = () => {
-  return BASE_URL;
-};
-
-export const getReduxKey = () => REDUX_KEY;
-
-export const validateEmail = (email: string) => {
-  return email.match(
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-  );
-};
-
-export const getFormattedTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+export const addAlpha = (color: string, alpha: number): string => {
+  // Convert hex to rgba
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };

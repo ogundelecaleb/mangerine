@@ -10,15 +10,5 @@ export const useAuth = () => {
     isAuthenticated: !!auth.token,
     authTrigger: auth.authTrigger,
     authBlocked: auth.authBlocked,
-    skills: [],
-    education: [],
-    experience: [],
-    languages: [],
-    followers: [],
-    follows: [],
-    followerCount: 0,
-    followsCount: 0,
-    services: [],
-    works: [],
   };
 };

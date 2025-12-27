@@ -58,11 +58,11 @@ const ConfirmModal = ({
                 displayText={confirmButton || 'Yes'}
                 buttonProps={{
                   backgroundColor: 'background',
-                  borderColor: 'primary',
+                  borderColor: 'foreground_primary',
                   borderWidth: 1,
                 }}
                 textProps={{
-                  color: 'primary',
+                  color: 'foreground_primary',
                 }}
               />
             </Box>

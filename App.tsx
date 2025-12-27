@@ -28,10 +28,10 @@ export default function App() {
     'Outfit-ExtraBold': Outfit_800ExtraBold,
   });
 
-  useEffect(() => {
-    // Auto logout to clear storage and show auth screens
-    logoutUser();
-  }, []);
+  // useEffect(() => {
+  //   // Auto logout to clear storage and show auth screens
+  //   logoutUser();
+  // }, []);
 
   if (!fontsLoaded) {
     return <LoadingScreen />;

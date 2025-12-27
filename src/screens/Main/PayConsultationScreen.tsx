@@ -107,7 +107,10 @@ const PayConsultationScreen = ({
                   <Box
                     marginHorizontal="l"
                     backgroundColor="background"
-                    padding="m">
+                    padding="m"
+                    borderRadius={8}
+                    borderWidth={1}
+                    borderColor="border">
                     <Box>
                       <Text variant="semibold" fontSize={18}>
                         Payment Information

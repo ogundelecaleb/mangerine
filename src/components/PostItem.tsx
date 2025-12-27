@@ -248,12 +248,9 @@ const PostItem = ({ post, fullDetails, profile, postDelete }: Props) => {
                     overflow="hidden"
                     key={imageUri}>
                     <ScaledImage
-                      source={{ uri: imageUri }}
-                      style={{
-                        height: '100%',
-                        width: '100%',
-                        borderRadius: 6,
-                      }}
+                      uri={imageUri}
+                      width={150}
+                      height={150}
                     />
                   </Box>
                 ))}

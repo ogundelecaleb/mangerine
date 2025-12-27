@@ -1,48 +1,41 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@shopify/restyle';
-import { Theme } from '../utils/theme';
 import Box from './Box';
+import { Theme } from '../utils/theme';
 
-interface Props {
-  color?: string;
-  checkColor?: string;
+interface CheckBoxProps {
+  checked: boolean;
+  onPress: () => void;
   size?: number;
-  onPress?: () => void;
-  checked?: boolean;
+  disabled?: boolean;
 }
 
-const CheckBox = ({ checked, onPress, size = 20, color, checkColor }: Props) => {
+const CheckBox = ({ checked, onPress, size = 20, disabled = false }: CheckBoxProps) => {
   const theme = useTheme<Theme>();
 
   return (
-    <Box>
-      <TouchableOpacity
-        activeOpacity={0.91}
-        testID="checkbox"
-        onPress={onPress}>
-        <Box
-          borderRadius={5}
-          borderWidth={1}
-          justifyContent="center"
-          alignItems="center"
-          style={{
-            borderColor: color || theme.colors.primary,
-            backgroundColor: checked ? color || theme.colors.primary : undefined,
-            width: size,
-            height: size,
-          }}>
-          {checked && (
-            <Ionicons
-              name={'checkmark'}
-              size={size - 6}
-              color={checked ? checkColor || theme.colors.background : theme.colors.primary}
-            />
-          )}
-        </Box>
-      </TouchableOpacity>
-    </Box>
+    <TouchableOpacity onPress={onPress} disabled={disabled}>
+      <Box
+        width={size}
+        height={size}
+        borderRadius={4}
+        borderWidth={2}
+        borderColor={checked ? 'primary' : 'border'}
+        backgroundColor={checked ? 'primary' : 'background'}
+        justifyContent="center"
+        alignItems="center"
+        opacity={disabled ? 0.5 : 1}>
+        {checked && (
+          <MaterialCommunityIcons
+            name="check"
+            size={size * 0.7}
+            color="white"
+          />
+        )}
+      </Box>
+    </TouchableOpacity>
   );
 };
 

@@ -10,9 +10,11 @@ import { postsApi } from './services/posts.service';
 import { consultantsApi } from './services/consultants.service';
 import { appointmentApi } from './services/appointment.service';
 import { availabilityApi } from './services/availability.service';
+import { workApi } from './services/work.service';
 
 // Import reducers
 import authReducer from './reducers/authSlice';
+import postsReducer from './reducers/posts.reducer';
 
 // Persist configuration
 const persistConfig = {
@@ -38,9 +40,11 @@ const rootReducer = combineReducers({
   [consultantsApi.reducerPath]: consultantsApi.reducer,
   [appointmentApi.reducerPath]: appointmentApi.reducer,
   [availabilityApi.reducerPath]: availabilityApi.reducer,
+  [workApi.reducerPath]: workApi.reducer,
   
   // App state slices
   auth: authReducer,
+  posts: postsReducer,
 });
 
 // Persisted reducer
@@ -59,7 +63,8 @@ export const store = configureStore({
       .concat(postsApi.middleware)
       .concat(consultantsApi.middleware)
       .concat(appointmentApi.middleware)
-      .concat(availabilityApi.middleware),
+      .concat(availabilityApi.middleware)
+      .concat(workApi.middleware),
   devTools: __DEV__,
 });
 

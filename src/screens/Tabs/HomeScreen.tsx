@@ -149,7 +149,7 @@ const HomeScreen = ({}: Props) => {
                 setConfirmConsultant(false);
                 setTimeout(async () => {
                   try {
-                    await become({});
+                    await become();
                     dispatch(
                       setAuthTrigger({
                         trigger: true,

@@ -10,13 +10,13 @@ import { useDispatch } from 'react-redux';
 import Box from './Box';
 import Text from './Text';
 import Button from './Button';
-import ScaledImage from './ScaledImage';
-import Modal from './Modal';
+import ConfirmModal from './ConfirmModal';
 import { MainStack, Appointment, ErrorData } from '../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../utils/theme';
 import { setAuthTrigger } from '../state/reducers/user.reducer';
 import { useCancelAppointmentMutation } from '../state/services/appointment.service';
+import { addAlpha } from '../utils/helpers';
 
 interface Props {
   item: Appointment;
@@ -86,13 +86,12 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
               width={44}
               borderRadius={4}
               backgroundColor="faded"
-              overflow="hidden">
-              <ScaledImage
-                source={{
-                  uri: item?.consultant?.profilePics || '',
-                }}
-                style={{ height: '100%', width: '100%' }}
-              />
+              overflow="hidden"
+              justifyContent="center"
+              alignItems="center">
+              <Text variant="semibold" fontSize={18}>
+                {item?.consultant?.fullName?.charAt(0) || 'C'}
+              </Text>
             </Box>
             <Box>
               <Text variant="semibold" fontSize={16}>
@@ -176,7 +175,6 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
         <Box flexDirection="row" gap="l">
           <Box flex={1}>
             <Button
-              variant="outline"
               displayText="Cancel"
               onPress={() => setCancelConfirm(true)}
             />
@@ -200,44 +198,84 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
         </Box>
       )}
 
-      <Modal
+      <ConfirmModal
+        closeModal={() => setCancelConfirm(false)}
         isVisible={cancelConfirm}
-        onClose={() => setCancelConfirm(false)}
         title="Are you sure you want to cancel?"
         subtitle="You'll lose the option to reschedule, and 10% of your payment will be deducted. Proceed?"
-        primaryAction={{
-          text: "Yes, Cancel",
-          onPress: () => {
-            setCancelConfirm(false);
-            setTimeout(() => {
-              cancelThisAppointment();
-            }, 900);
-          }
+        confirmButton="Yes, Cancel"
+        cancelButton="No, Keep"
+        confirm={() => {
+          setCancelConfirm(false);
+          setTimeout(() => {
+            cancelThisAppointment();
+          }, 900);
         }}
-        secondaryAction={{
-          text: "No, Keep",
-          onPress: () => setCancelConfirm(false)
-        }}
+        headComponent={
+          <Box
+            height={80}
+            width={80}
+            justifyContent="center"
+            alignItems="center"
+            borderRadius={100}
+            style={{
+              backgroundColor: addAlpha('#FFC107', 0.1),
+            }}>
+            <Box
+              justifyContent="center"
+              alignItems="center"
+              borderRadius={12}
+              height={36}
+              width={36}
+              style={{
+                backgroundColor: '#FFC107',
+              }}>
+              <MaterialCommunityIcons
+                name="exclamation"
+                color="#FFF"
+                size={24}
+              />
+            </Box>
+          </Box>
+        }
       />
 
-      <Modal
+      <ConfirmModal
+        closeModal={() => setApptDeleted(false)}
         isVisible={apptDeleted}
-        onClose={() => setApptDeleted(false)}
         title="Consultation Canceled Successfully"
         subtitle="10% has been deducted, and the remaining amount is credited to your wallet."
-        primaryAction={{
-          text: "View Transaction",
-          onPress: () => {
-            setApptDeleted(false);
-            setTimeout(() => {
-              navigation.navigate('MyConsultation');
-            }, 900);
-          }
+        confirmButton="View Transaction"
+        cancelButton="Cancel"
+        confirm={() => {
+          setApptDeleted(false);
+          setTimeout(() => {
+            navigation.navigate('MyConsultation');
+          }, 900);
         }}
-        secondaryAction={{
-          text: "Cancel",
-          onPress: () => setApptDeleted(false)
-        }}
+        headComponent={
+          <Box
+            height={80}
+            width={80}
+            justifyContent="center"
+            alignItems="center"
+            borderRadius={100}
+            style={{
+              backgroundColor: addAlpha('#4CAF50', 0.1),
+            }}>
+            <Box
+              justifyContent="center"
+              alignItems="center"
+              borderRadius={12}
+              height={36}
+              width={36}
+              style={{
+                backgroundColor: '#4CAF50',
+              }}>
+              <MaterialCommunityIcons name="check" color="#FFF" size={24} />
+            </Box>
+          </Box>
+        }
       />
     </>
   );

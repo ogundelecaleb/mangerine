@@ -2,14 +2,119 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 
 // Types for different entities in the app
 export interface User {
-  id: string;
   fullName: string;
   email: string;
-  avatar?: string;
-  // Add more user properties as needed
+  businessName?: string;
+  location?: string;
+  password?: string;
+  interests?: Interest[];
+  userType?: UserType;
+  websiteAddress?: string | null;
+  mobileNumber?: string | null;
+  secondaryNumber?: string | null;
+  postalAddress?: string | null;
+  dateOfBirth?: string | null;
+  title?: string | null;
+  profilePics?: string | null;
+  profilePicsId?: string | null;
+  profileBanner?: string | null;
+  profileBannerId?: string | null;
+  resume?: string | null;
+  videoIntro?: string | null;
+  bio?: string | null;
+  isConsultant?: boolean;
+  videoIntroPubId?: string | null;
+  messagingPreference?: string;
+  id: string;
+  step?: number;
+  authType?: string;
+  pricingPlan?: string;
+  billingCycle?: string;
+  isVerified?: boolean;
+  isActive?: boolean;
+  regComplete?: boolean;
+  followerCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  appearInSearchResults?: boolean;
+  emailVisible?: boolean;
+  websiteVisible?: boolean;
+  phoneVisible?: boolean;
+}
+
+export interface UserType {
+  id: string;
+  name: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Interest {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  skills: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Education {
+  id: string;
+  school_name: string;
+  degree: string;
+  field_of_study: string;
+  start_month: string;
+  start_year: string;
+  end_month: string;
+  end_year: string;
+  isCurrent: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Experience {
+  id: string;
+  title: string;
+  employment_type: string;
+  company_name: string;
+  location: string;
+  start_month: string;
+  start_year: string;
+  end_month: string;
+  end_year: string;
+  isCurrent: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Language {
+  id: string;
+  language: string;
+  proficiency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Consultancy {
+  id: string;
+  title: string;
+  description: string;
+  hours: number;
+  file: string;
+  file_public_id: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Consultant extends User {
+  title?: string;
   specialization?: string;
   hourlyRate?: number;
   // Add more consultant-specific properties

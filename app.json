@@ -4,22 +4,32 @@
     "slug": "mangerine",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash-screen.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#111D4A"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mangerine.app"
+      "bundleIdentifier": "com.mangerine.app",
+      "splash": {
+      "image": "./assets/splash-screen.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#111D4A"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#111D4A"
+      },
+      "splash": {
+      "image": "./assets/splash-screen.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#111D4A"
       },
       "package": "com.mangerine.app",
       "edgeToEdgeEnabled": true,
@@ -39,6 +49,6 @@
         "projectId": "39bbc663-3a09-427f-b29b-5febc8b452c9"
       }
     },
-    "owner": "mangerine"
+    "owner": "vant-app"
   }
 }

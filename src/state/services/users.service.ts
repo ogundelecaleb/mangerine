@@ -43,6 +43,14 @@ export const usersApi = createApi({
       }),
       invalidatesTags: ['Profile'],
     }),
+    updateProfileVideo: builder.mutation<any, FormData>({
+      query: (body) => ({
+        url: '/update/profile/video',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Profile'],
+    }),
     updateProfileInfo: builder.mutation<any, {
       fullName: string;
       occupation: string;
@@ -63,14 +71,6 @@ export const usersApi = createApi({
     }>({
       query: (body) => ({
         url: '/update/contact/info',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: ['Profile'],
-    }),
-    addSkill: builder.mutation<any, { name: string; skills: string[] }>({
-      query: (body) => ({
-        url: '/add/skill',
         method: 'POST',
         body,
       }),
@@ -175,6 +175,7 @@ export const {
   useGetUserInfoQuery,
   useUpdateProfilePicMutation,
   useUpdateProfileBannerMutation,
+  useUpdateProfileVideoMutation,
   useUpdateProfileInfoMutation,
   useUpdateProfileContactMutation,
   useAddSkillMutation,

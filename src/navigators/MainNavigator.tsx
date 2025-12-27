@@ -16,10 +16,21 @@ import ForgotPasswordScreen from '../screens/Authentication/ForgotPasswordScreen
 import ForgotPasswordOTPScreen from '../screens/Authentication/ForgotPasswordOTPScreen';
 import ResetPasswordScreen from '../screens/Authentication/ResetPasswordScreen';
 
-// Import main screens
-import EditProfileScreen from '../screens/Main/EditProfileScreen';
-import SettingsScreen from '../screens/Main/SettingsScreen';
-import PostDetailsScreen from '../screens/Post/PostDetailsScreen';
+// import UpdateContactScreen from '../screens/Main/UpdateContactScreen';
+// import UserFollowersScreen from '../screens/Main/UserFollowersScreen';
+// import UserFollowingScreen from '../screens/Main/UserFollowingScreen';
+// import {
+//   ManageSkillsScreen,
+//   ManageEducationScreen,
+//   ManageExperienceScreen,
+//   ManageLanguagesScreen,
+//   UserPostsScreen,
+//   UserWorksScreen,
+//   AddWorkScreen,
+// } from '../screens/Main/ProfileManagementScreens';
+// import EditProfileScreen from '../screens/Main/EditProfileScreen';
+// import SettingsScreen from '../screens/Main/SettingsScreen';
+// import PostDetailsScreen from '../screens/Post/PostDetailsScreen';
 import CreatePostScreen from '../screens/Post/CreatePostScreen';
 import BookConsultationScreen from '../screens/Main/BookConsultationScreen';
 import MyConsultationScreen from '../screens/Main/MyConsultationScreen';
@@ -65,12 +76,20 @@ const MainNavigator = () => {
           <>
             <Stack.Screen name="Tabs" component={BottomTabNavigator} />
             
-            {/* Profile and Settings screens */}
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen name="Settings" component={SettingsScreen} />
-            <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
+            {/* <Stack.Screen name="EditProfile" component={EditProfileScreen} /> */}
+            {/* <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="UpdateContact" component={UpdateContactScreen} />
+            <Stack.Screen name="UserFollowers" component={UserFollowersScreen} />
+            <Stack.Screen name="UserFollowing" component={UserFollowingScreen} />
+            <Stack.Screen name="ManageSkills" component={ManageSkillsScreen} />
+            <Stack.Screen name="ManageEducation" component={ManageEducationScreen} />
+            <Stack.Screen name="ManageExperience" component={ManageExperienceScreen} />
+            <Stack.Screen name="ManageLanguages" component={ManageLanguagesScreen} />
+            <Stack.Screen name="UserPosts" component={UserPostsScreen} />
+            <Stack.Screen name="UserWorks" component={UserWorksScreen} />
+            <Stack.Screen name="AddWork" component={AddWorkScreen} /> */}
+            {/* <Stack.Screen name="PostDetails" component={PostDetailsScreen} /> */}
             <Stack.Screen name="CreatePost" component={CreatePostScreen} />
-            {/* <Stack.Screen name="EditPost" component={EditPostScreen} /> */}
             <Stack.Screen name="BookConsultation" component={BookConsultationScreen} />
             <Stack.Screen name="PayConsultation" component={PayConsultationScreen} />
             <Stack.Screen name="RescheduleConsultation" component={RescheduleConsultationScreen} />

@@ -8,8 +8,8 @@ export const consultantsApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/consultants`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
-      if (token) {
+ const state = getState() as any;
+      const token = state.auth?.token;      if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;
@@ -68,6 +68,26 @@ export const consultantsApi = createApi({
         body,
       }),
     }),
+       updatePricing: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          currency: string;
+          flatPrice: string;
+          dayBookPercentage: number;
+          midDayBookPercentage: number;
+          twoHoursDiscount: number;
+          threeHoursDiscount: number;
+          fourHoursDiscount: number;
+          otherHoursDiscount: number;
+        };
+      }) => ({
+        url: '/pricing',
+        method: 'POST',
+        body,
+      }),
+    }),
     cancelConsultation: builder.mutation({
       query: ({ id }: { id: string }) => ({
         url: `/consultations/${id}/cancel`,
@@ -86,5 +106,6 @@ export const {
   useBookConsultationMutation,
   useGetMyConsultationsMutation,
   useRescheduleConsultationMutation,
+  useUpdatePricingMutation,
   useCancelConsultationMutation,
 } = consultantsApi;

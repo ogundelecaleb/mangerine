@@ -347,7 +347,7 @@ const PricingScreen = ({
               </Box>
               <Box>
                 <Button
-                  variant="outline"
+                  // variant="outline"
                   displayText="Cancel"
                   onPress={navigation.goBack}
                 />

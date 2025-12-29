@@ -8,80 +8,84 @@ export const authApi = createApi({
     baseUrl: `${getUrl()}/auth`,
     prepareHeaders: async (headers, { getState }) => {
       console.log('API Base URL:', `${getUrl()}/auth`);
-      const token = (getState() as RootState).auth?.token;
+      const state = getState() as any;
+      const token = state.auth?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     preLogin: builder.mutation<any, { email: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/pre/login',
         method: 'POST',
         body,
       }),
     }),
     preSignup: builder.mutation<any, { email: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/pre/signup',
         method: 'POST',
         body,
       }),
     }),
     login: builder.mutation<any, { username: string; password: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/login',
         method: 'POST',
         body,
       }),
     }),
     googleLogin: builder.mutation<any, { access_token: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/google',
         method: 'POST',
         body,
       }),
     }),
-    createAccount: builder.mutation<any, {
-      email: string;
-      fullName: string;
-      businessName: string;
-      location: string;
-      interests: string[];
-      userType: string[];
-      password: string;
-    }>({
-      query: (body) => ({
+    createAccount: builder.mutation<
+      any,
+      {
+        email: string;
+        fullName: string;
+        businessName: string;
+        location: string;
+        interests: string[];
+        userType: string[];
+        password: string;
+      }
+    >({
+      query: body => ({
         url: '/create/account',
         method: 'POST',
         body,
       }),
     }),
     sendEmailOTP: builder.mutation<any, { email: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/send/email/otp',
         method: 'POST',
         body,
       }),
     }),
     verifyEmailOTP: builder.mutation<any, { otpCode: string; email: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/verify/email/otp',
         method: 'POST',
         body,
       }),
     }),
     forgotPassword: builder.mutation<any, { email: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/forgot/password',
         method: 'POST',
         body,
       }),
     }),
     changePassword: builder.mutation<any, { email: string; password: string }>({
-      query: (body) => ({
+      query: body => ({
         url: '/change/password',
         method: 'POST',
         body,

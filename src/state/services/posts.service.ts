@@ -1,20 +1,62 @@
+import { getUrl } from '@/utils/helpers';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
-import { API_BASE_URL } from '../config';
 
+// Create your service using a base URL and expected endpoints
 export const postsApi = createApi({
   reducerPath: 'postsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/posts`,
+    baseUrl: `${getUrl()}/posts`,
     prepareHeaders: async (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
+      // By default, if we have a token in the store, let's use that for authenticated requests
+      const state = getState() as any;
+      const token = state.auth?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
+        // headers.set('Authentication', `Bearer ${token}`);
       }
       return headers;
     },
   }),
   endpoints: builder => ({
+    allPosts: builder.mutation({
+      query: () => ({
+        url: '',
+        method: 'GET',
+      }),
+    }),
+    userPosts: builder.mutation({
+      query: (id: string) => ({
+        url: '/users/' + id,
+        method: 'GET',
+      }),
+    }),
+    getPost: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/' + id,
+        method: 'GET',
+      }),
+    }),
+    deletePost: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/' + id,
+        method: 'DELETE',
+      }),
+    }),
+    editPost: builder.mutation({
+      query: ({ body, id }: { body: FormData; id: string }) => ({
+        url: '/' + id,
+        method: 'PATCH',
+        body,
+      }),
+    }),
+    createPost: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
+        url: '',
+        method: 'POST',
+        body,
+      }),
+    }),
     paginatedPosts: builder.mutation({
       query: ({
         params,
@@ -29,44 +71,22 @@ export const postsApi = createApi({
         params,
       }),
     }),
-    likePost: builder.mutation({
+    trendingPosts: builder.mutation({
       query: ({
-        body,
+        params,
       }: {
-        body: {
-          postId: string;
-          userId: string;
+        params: {
+          page: number;
+          limit: number;
+          timeLimit: string; //1h, 6h, 24h, 7d, 30d
+          algorithm: string; //reddit, hackernews, custom, hybrid
+          minEngagement: number; //reddit, hackernews, custom, hybrid
+          excludeHidden: boolean; //reddit, hackernews, custom, hybrid
         };
       }) => ({
-        url: '/like',
-        method: 'POST',
-        body,
-      }),
-    }),
-    sharePost: builder.mutation({
-      query: ({ id }: { id: string }) => ({
-        url: `/${id}/share`,
-        method: 'POST',
-      }),
-    }),
-    createPost: builder.mutation({
-      query: ({ body }: { body: FormData }) => ({
-        url: '',
-        method: 'POST',
-        body,
-      }),
-    }),
-    editPost: builder.mutation({
-      query: ({ body, id }: { body: FormData; id: string }) => ({
-        url: '/' + id,
-        method: 'PATCH',
-        body,
-      }),
-    }),
-    getPost: builder.mutation({
-      query: ({ id }: { id: string }) => ({
-        url: '/' + id,
+        url: '/trending',
         method: 'GET',
+        params,
       }),
     }),
     getComments: builder.mutation({
@@ -85,6 +105,126 @@ export const postsApi = createApi({
         params,
       }),
     }),
+    getCommentRepliess: builder.mutation({
+      query: ({
+        params,
+      }: {
+        params: {
+          commentId: string;
+          page: number;
+          order: 'ASC' | 'DESC';
+          take: number;
+        };
+      }) => ({
+        url: '/get/comment/replies',
+        method: 'GET',
+        params,
+      }),
+    }),
+    likePost: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          postId: string;
+          userId: string;
+        };
+      }) => ({
+        url: '/like',
+        method: 'POST',
+        body,
+      }),
+    }),
+    viewPost: builder.mutation({
+      query: ({
+        // body,
+        id,
+      }: {
+        // body: {
+        //   postId: string;
+        //   userId: string;
+        // };
+        id: string;
+      }) => ({
+        url: `/${id}/increment-views`,
+        method: 'GET',
+        // body,
+      }),
+    }),
+    likeComment: builder.mutation({
+      query: ({
+        id,
+        body,
+      }: {
+        id: string;
+        body: {
+          userId: string;
+        };
+      }) => ({
+        url: `/comment/${id}/like`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    unlikeComment: builder.mutation({
+      query: ({
+        id,
+        body,
+      }: {
+        id: string;
+        body: {
+          userId: string;
+        };
+      }) => ({
+        url: `/comment/${id}/unlike`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    deleteComment: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: `/comment/${id}`,
+        method: 'DELETE',
+      }),
+    }),
+    replyComment: builder.mutation({
+      query: ({ id, body }: { id: string; body: any }) => ({
+        url: `/comment/${id}/reply`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    unlikePost: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          postId: string;
+          userId: string;
+        };
+      }) => ({
+        url: '/unlike',
+        method: 'POST',
+        body,
+      }),
+    }),
+    reportPost: builder.mutation({
+      query: ({
+        body,
+        id,
+      }: {
+        body: {
+          postId: string;
+          userId: string;
+          reportDetails: string;
+        };
+        id: string;
+      }) => ({
+        url: `/${id}/report`,
+        method: 'POST',
+        body,
+      }),
+    }),
     postComment: builder.mutation({
       query: ({
         body,
@@ -100,30 +240,38 @@ export const postsApi = createApi({
         body,
       }),
     }),
-    viewPost: builder.mutation({
+    sharePost: builder.mutation({
       query: ({ id }: { id: string }) => ({
-        url: `/${id}/increment-views`,
-        method: 'GET',
-      }),
-    }),
-    deletePost: builder.mutation({
-      query: ({ id }: { id: string }) => ({
-        url: '/' + id,
-        method: 'DELETE',
+        url: `/${id}/share`,
+        method: 'POST',
       }),
     }),
   }),
 });
 
 export const {
-  usePaginatedPostsMutation,
-  useLikePostMutation,
-  useSharePostMutation,
-  useDeletePostMutation,
+  useAllPostsMutation,
   useCreatePostMutation,
-  useEditPostMutation,
-  useGetPostMutation,
+  useGetCommentRepliessMutation,
   useGetCommentsMutation,
+  useGetPostMutation,
+  useLikeCommentMutation,
+  useLikePostMutation,
+  usePaginatedPostsMutation,
   usePostCommentMutation,
+  useReplyCommentMutation,
+  useReportPostMutation,
+  useSharePostMutation,
+  useUnlikeCommentMutation,
+  useUnlikePostMutation,
   useViewPostMutation,
+  useUserPostsMutation,
+  useEditPostMutation,
+  useTrendingPostsMutation,
+  useDeletePostMutation,
+  useDeleteCommentMutation,
 } = postsApi;
+
+
+
+

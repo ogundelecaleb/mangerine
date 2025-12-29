@@ -4,11 +4,10 @@ import { Image, ImageSourcePropType } from 'react-native';
 interface Props {
   width?: number;
   height?: number;
-  source?: ImageSourcePropType;
-  uri?: string;
+  source: ImageSourcePropType;
 }
 
-export default ({ source, uri, ...props }: Props) => {
+export default ({ ...props }: Props) => {
   const [dimension, setDimension] = useState<{
     width?: number;
     height?: number;
@@ -31,32 +30,24 @@ export default ({ source, uri, ...props }: Props) => {
       }
     };
 
-    if (source) {
-      // Handle local images
-      const resolved = Image.resolveAssetSource(source);
-      getSize(resolved.width, resolved.height);
-    } else if (uri) {
-      // Handle remote images
-      Image.getSize(
-        uri,
-        (width, height) => getSize(width, height),
-        () => {
-          // Fallback dimensions if getSize fails
-          setDimension({ width: props.width || 200, height: props.height || 200 });
-        }
-      );
+    try {
+      const resolvedSource = Image.resolveAssetSource(props.source);
+      if (resolvedSource && resolvedSource.width && resolvedSource.height) {
+        getSize(resolvedSource.width, resolvedSource.height);
+      } else {
+        // Fallback dimensions if source can't be resolved
+        setDimension({ width: props.width || 100, height: props.height || 100 });
+      }
+    } catch (error) {
+      console.log('ScaledImage error:', error);
+      setDimension({ width: props.width || 100, height: props.height || 100 });
     }
-  }, [source, uri, props.width, props.height]);
-
-  const imageSource = source || (uri ? { uri } : undefined);
-
-  if (!imageSource) {
-    return null;
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Image
-      source={imageSource}
+      source={props.source}
       style={{ height: dimension?.height, width: dimension?.width }}
     />
   );

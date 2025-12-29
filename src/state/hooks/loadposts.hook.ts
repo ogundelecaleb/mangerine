@@ -4,8 +4,7 @@ import { ErrorData } from '../../utils/ParamList';
 import { signUserOut } from '../reducers/user.reducer';
 import { useAuth } from './user.hook';
 import {
-  useAllPostsMutation,
-  useUserPostsMutation,
+  usePaginatedPostsMutation,
 } from '../services/posts.service';
 import {
   setAllPosts,
@@ -17,9 +16,9 @@ import { useGetWorksMutation } from '../services/work.service';
 export const useLoadPosts = () => {
   const { token, user } = useAuth();
   const dispatch = useDispatch();
-  const [getPosts, { isLoading: allpostsLoading }] = useAllPostsMutation();
+  const [getPosts, { isLoading: allpostsLoading }] = usePaginatedPostsMutation();
   const [getUserPosts, { isLoading: userpostsLoading }] =
-    useUserPostsMutation();
+    usePaginatedPostsMutation();
   const [getUserWorks, { isLoading: userWorksLoading }] = useGetWorksMutation();
 
   const loadUserPosts = useCallback(async () => {
@@ -27,7 +26,9 @@ export const useLoadPosts = () => {
       if (!token || !user) {
         return;
       }
-      const response = await getUserPosts(user?.id);
+      const response = await getUserPosts({
+        params: { page: 1, limit: 10 }
+      });
       if ((response as any)?.error) {
         const err = response as any as ErrorData;
         if (
@@ -81,7 +82,9 @@ export const useLoadPosts = () => {
       if (!token) {
         return;
       }
-      const response = await getPosts({});
+      const response = await getPosts({
+        params: { page: 1, limit: 10 }
+      });
       if ((response as any)?.error) {
         const err = response as any as ErrorData;
         if (

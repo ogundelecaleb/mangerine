@@ -1,61 +1,90 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_BASE_URL } from '../config';
 
-export interface Timeslot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  isBooked: boolean;
-}
-
-export interface Availability {
-  id: string;
-  date: string;
-  timeslots: Timeslot[];
-}
-
+// Create your service using a base URL and expected endpoints
 export const availabilityApi = createApi({
   reducerPath: 'availabilityApi',
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/availability`,
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
+      // By default, if we have a token in the store, let's use that for authenticated requests
       const token = (getState() as any).auth.token;
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
+        // headers.set('Authentication', `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['Availability'],
-  endpoints: (builder) => ({
-    getConsultantAvailability: builder.mutation<
-      { data: Availability[] },
-      { params: { userId: string; startDate: string; endDate: string } }
-    >({
-      query: ({ params }) => ({
-        url: '/consultant',
+  endpoints: builder => ({
+    getConsultantAvailability: builder.mutation({
+      query: ({
+        params,
+      }: {
+        params: {
+          userId: string;
+          startDate: string;
+          endDate: string;
+        };
+      }) => ({
+        url: '',
         method: 'GET',
         params,
       }),
-      invalidatesTags: ['Availability'],
     }),
-    
-    updateAvailability: builder.mutation<
-      { data: Availability },
-      { body: { date: string; timeslots: Omit<Timeslot, 'id'>[] } }
-    >({
-      query: ({ body }) => ({
-        url: '/update',
+    getAvailability: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: `/${id}`,
+        method: 'GET',
+      }),
+    }),
+    createAvailability: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          timezone: string;
+          availability_settings: string[];
+          availabilities: string[];
+          consultantId: string;
+        };
+      }) => ({
+        url: '/create',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Availability'],
+    }),
+    updateAvailability: builder.mutation({
+      query: ({
+        body,
+        id,
+      }: {
+        body: {
+          timezone: string;
+          availability_settings: string[];
+          availabilities: string[];
+          consultantId: string;
+        };
+        id: string;
+      }) => ({
+        url: '/' + id,
+        method: 'PATCH',
+        body,
+      }),
+    }),
+    deleteAvailability: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: `/${id}`,
+        method: 'DELETE',
+      }),
     }),
   }),
 });
 
 export const {
+  useCreateAvailabilityMutation,
+  useDeleteAvailabilityMutation,
+  useGetAvailabilityMutation,
   useGetConsultantAvailabilityMutation,
   useUpdateAvailabilityMutation,
-} = availabilityApi;
+} = availabilityApi; 

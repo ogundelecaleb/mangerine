@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useDispatch } from 'react-redux';
 import { MainStack } from '../utils/ParamList';
 import BottomTabNavigator from './BottomTabNavigator';
 import { useAppSelector } from '../state/hooks/redux';
+import { useAuth } from '../state/hooks/user.hook';
+import { useLoadAuth } from '../state/hooks/loadauth.hook';
+import { setAuthTrigger } from '../state/reducers/user.reducer';
 
 // Import auth screens
 import OnboardingScreen from '../screens/Authentication/OnboardingScreen';
@@ -16,20 +20,20 @@ import ForgotPasswordScreen from '../screens/Authentication/ForgotPasswordScreen
 import ForgotPasswordOTPScreen from '../screens/Authentication/ForgotPasswordOTPScreen';
 import ResetPasswordScreen from '../screens/Authentication/ResetPasswordScreen';
 
-// import UpdateContactScreen from '../screens/Main/UpdateContactScreen';
-// import UserFollowersScreen from '../screens/Main/UserFollowersScreen';
-// import UserFollowingScreen from '../screens/Main/UserFollowingScreen';
-// import {
-//   ManageSkillsScreen,
-//   ManageEducationScreen,
-//   ManageExperienceScreen,
-//   ManageLanguagesScreen,
-//   UserPostsScreen,
-//   UserWorksScreen,
-//   AddWorkScreen,
-// } from '../screens/Main/ProfileManagementScreens';
-// import EditProfileScreen from '../screens/Main/EditProfileScreen';
-// import SettingsScreen from '../screens/Main/SettingsScreen';
+import UpdateContactScreen from '../screens/Main/UpdateContactScreen';
+import UserFollowersScreen from '../screens/Main/UserFollowersScreen';
+import UserFollowingScreen from '../screens/Main/UserFollowingScreen';
+import {
+  ManageSkillsScreen,
+  ManageEducationScreen,
+  ManageExperienceScreen,
+  ManageLanguagesScreen,
+  UserPostsScreen,
+  UserWorksScreen,
+  AddWorkScreen,
+} from '../screens/Main/ProfileManagementScreens';
+import EditProfileScreen from '../screens/Main/EditProfileScreen';
+import SettingsScreen from '../screens/Main/SettingsScreen';
 // import PostDetailsScreen from '../screens/Post/PostDetailsScreen';
 import CreatePostScreen from '../screens/Post/CreatePostScreen';
 import BookConsultationScreen from '../screens/Main/BookConsultationScreen';
@@ -50,6 +54,17 @@ const Stack = createNativeStackNavigator<MainStack>();
 
 const MainNavigator = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { authTrigger, token } = useAuth();
+  const { loadAuth, profileLoading } = useLoadAuth();
+  const dispatch = useDispatch();
+
+  // Handle authTrigger to reload user data
+  useEffect(() => {
+    if (authTrigger && token && !profileLoading) {
+      loadAuth();
+      dispatch(setAuthTrigger({ trigger: false }));
+    }
+  }, [authTrigger, loadAuth, dispatch, profileLoading, token]);
 
   return (
     <NavigationContainer>
@@ -76,8 +91,8 @@ const MainNavigator = () => {
           <>
             <Stack.Screen name="Tabs" component={BottomTabNavigator} />
             
-            {/* <Stack.Screen name="EditProfile" component={EditProfileScreen} /> */}
-            {/* <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="UpdateContact" component={UpdateContactScreen} />
             <Stack.Screen name="UserFollowers" component={UserFollowersScreen} />
             <Stack.Screen name="UserFollowing" component={UserFollowingScreen} />
@@ -85,7 +100,7 @@ const MainNavigator = () => {
             <Stack.Screen name="ManageEducation" component={ManageEducationScreen} />
             <Stack.Screen name="ManageExperience" component={ManageExperienceScreen} />
             <Stack.Screen name="ManageLanguages" component={ManageLanguagesScreen} />
-            <Stack.Screen name="UserPosts" component={UserPostsScreen} />
+           {/* <Stack.Screen name="UserPosts" component={UserPostsScreen} />
             <Stack.Screen name="UserWorks" component={UserWorksScreen} />
             <Stack.Screen name="AddWork" component={AddWorkScreen} /> */}
             {/* <Stack.Screen name="PostDetails" component={PostDetailsScreen} /> */}

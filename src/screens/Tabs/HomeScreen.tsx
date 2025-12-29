@@ -29,7 +29,7 @@ import { useThemeColors } from '../../hooks/useTheme';
 import { usePaginatedPostsMutation } from '../../state/services/posts.service';
 import { useBecomeConsultantMutation } from '../../state/services/users.service';
 import { useAuth } from '../../state/hooks/user.hook';
-import { setAuthTrigger } from '../../state/reducers/authSlice';
+import { setAuthTrigger } from '../../state/reducers/user.reducer';
 
 interface Post {
   id: string;

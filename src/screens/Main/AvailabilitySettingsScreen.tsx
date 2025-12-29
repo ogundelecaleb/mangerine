@@ -41,27 +41,54 @@ const days = [
 ];
 
 // Simple AvailabilityAccordion component placeholder
-const AvailabilityAccordion = ({ day, active, toggleDay, addSlot, updateSlot, removeSlot, slots }: any) => (
-  <Box marginVertical="s" borderWidth={1} borderColor="border" borderRadius={8} padding="m">
+const AvailabilityAccordion = ({
+  day,
+  active,
+  toggleDay,
+  addSlot,
+  updateSlot,
+  removeSlot,
+  slots,
+}: any) => (
+  <Box
+    marginVertical="s"
+    borderWidth={1}
+    borderColor="border"
+    borderRadius={8}
+    padding="m">
     <TouchableOpacity onPress={toggleDay}>
-      <Box flexDirection="row" justifyContent="space-between" alignItems="center">
+      <Box
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center">
         <Text variant="medium">{day}</Text>
-        <MaterialCommunityIcons 
-          name={active ? "chevron-up" : "chevron-down"} 
-          size={20} 
+        <MaterialCommunityIcons
+          name={active ? 'chevron-up' : 'chevron-down'}
+          size={20}
         />
       </Box>
     </TouchableOpacity>
     {active && (
       <Box marginTop="m">
         <TouchableOpacity onPress={addSlot}>
-          <Box backgroundColor="primary" padding="s" borderRadius={6} alignItems="center">
+          <Box
+            backgroundColor="primary"
+            padding="s"
+            borderRadius={6}
+            alignItems="center">
             <Text color="white">Add Time Slot</Text>
           </Box>
         </TouchableOpacity>
         {slots?.map((slot: any, index: number) => (
-          <Box key={index} flexDirection="row" alignItems="center" gap="s" marginTop="s">
-            <Text flex={1}>{slot.from[0]} - {slot.to[0]}</Text>
+          <Box
+            key={index}
+            flexDirection="row"
+            alignItems="center"
+            gap="s"
+            marginTop="s">
+            <Text flex={1}>
+              {slot.from[0]} - {slot.to[0]}
+            </Text>
             <TouchableOpacity onPress={() => removeSlot(index)}>
               <MaterialCommunityIcons name="delete" size={20} color="red" />
             </TouchableOpacity>
@@ -91,31 +118,44 @@ const AvailabilitySettingsScreen = ({
 
   const sortedDates = useMemo(
     () =>
-      days.map(d => ({
-        day: d,
-        dates: Array.from(
-          {
-            length: moment().daysInMonth(),
-          },
-          (_, i) => ({
-            dayString: moment(moment().format('YYYY-MM-' + (i + 1))).format(
-              'dddd',
-            ),
-            date: moment(moment().format('YYYY-MM-' + (i + 1))).format(
-              'YYYY-MM-DD',
-            ),
-          }),
-        ).filter(x => x.dayString.toLowerCase() === d.toLowerCase()),
-      })),
+      days.map(d => {
+        const dates = [];
+        // Generate dates for next 3 months to ensure we have future dates
+        for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+          const targetMonth = moment().add(monthOffset, 'month');
+          const daysInMonth = targetMonth.daysInMonth();
+
+          for (let i = 1; i <= daysInMonth; i++) {
+            const date = moment(
+              targetMonth.format('YYYY-MM-') + String(i).padStart(2, '0'),
+            );
+            if (date.format('dddd').toLowerCase() === d.toLowerCase()) {
+              dates.push({
+                dayString: date.format('dddd'),
+                date: date.format('YYYY-MM-DD'),
+              });
+            }
+          }
+        }
+
+        return {
+          day: d,
+          dates: dates,
+        };
+      }),
     [],
   );
 
   const preparedDates = useMemo(() => {
     const datesWithSlots = timeSlots
-      .map(x =>
-        sortedDates
-          .find(xx => xx.day.toLowerCase() === x.day.toLowerCase())
-          ?.dates?.map(sx => ({
+      .filter(x => x.enabled) // Only process enabled days
+      .map(x => {
+        const foundDay = sortedDates.find(
+          xx => xx.day.toLowerCase() === x.day.toLowerCase(),
+        );
+
+        return foundDay?.dates?.map(sx => {
+          return {
             date: sx.date,
             timeslots: x?.slots?.map(xp => ({
               startTime: xp?.from?.[0],
@@ -123,12 +163,16 @@ const AvailabilitySettingsScreen = ({
               duration: Number(preferredDur),
               isAvailable: true,
             })),
-          })),
-      )
+          };
+        });
+      })
       ?.flat()
-      ?.filter(
-        x => x !== undefined && moment(x?.date).valueOf() > moment()?.valueOf(),
-      );
+      ?.filter(x => {
+        const isValid =
+          x !== undefined && moment(x?.date).valueOf() > moment().valueOf();
+        return isValid;
+      });
+
     return datesWithSlots;
   }, [preferredDur, sortedDates, timeSlots]);
 
@@ -219,18 +263,27 @@ const AvailabilitySettingsScreen = ({
 
   const newAvailability = useCallback(async () => {
     try {
+      console.log('timeSlots:', timeSlots);
+      console.log('preparedDates:', preparedDates);
+      console.log('preparedDates.length:', preparedDates.length);
+
       const avObj = {
         timezone,
         availability_settings: [],
         availabilities: preparedDates,
       };
+
       if (!preparedDates.length) {
+        showMessage({
+          message: 'Please add at least one time slot',
+          type: 'warning',
+        });
         return;
       }
       const response = await createAvailabil({
         body: avObj as any,
       });
-      
+
       if (response?.error) {
         const err = response as ErrorData;
         showMessage({
@@ -242,6 +295,11 @@ const AvailabilitySettingsScreen = ({
         });
         return;
       }
+      showMessage({
+        message:
+          "Availability generation has been queued successfully. You will receive a notification when it's complete",
+        type: 'success',
+      });
       dispatch(
         setAuthTrigger({
           trigger: true,

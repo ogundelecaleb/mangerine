@@ -26,7 +26,7 @@ import { Theme } from '../../utils/theme';
 import { useUpdateProfileContactMutation } from '../../state/services/users.service';
 import { useAuth } from '../../state/hooks/user.hook';
 import { useLoadAuth } from '../../state/hooks/loadauth.hook';
-import CheckBox from '../../components/CheckBox';
+import CheckBox from '@/components/Checkbox';
 
 const schema = yup
   .object({

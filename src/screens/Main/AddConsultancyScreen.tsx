@@ -4,53 +4,50 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useCallback, useState } from 'react';
+import Box from '@/components/Box';
+import { useThemeColors } from '@/hooks/useTheme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useForm, Controller } from 'react-hook-form';
+import { MainStack } from '@/utils/ParamList';
+import BaseScreenComponent from '@/components/BaseScreenComponent';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Text from '@/components/Text';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useForm, Controller } from 'react-hook-form';
+import Input from '@/components/Input';
+import Button from '@/components/Button';
+import { ErrorData } from '@/utils/types';
 import { showMessage } from 'react-native-flash-message';
 import * as ImagePicker from 'expo-image-picker';
+import { useAddConsultancyMutation } from '@/state/services/users.service';
+import { useLoadAuth } from '@/state/hooks/loadauth.hook';
 
-import Box from '../../components/Box';
-import Text from '../../components/Text';
-import Input from '../../components/Input';
-import Button from '../../components/Button';
-import BaseScreenComponent from '../../components/BaseScreenComponent';
-import ScaledImage from '../../components/ScaledImage';
-import { MainStack } from '../../utils/ParamList';
-import { useTheme } from '@shopify/restyle';
-import { Theme } from '../../utils/theme';
-import { useAddConsultancyMutation } from '../../state/services/users.service';
+const schema = yup
+  .object({
+    title: yup.string().max(255).required('Title is required'),
+    description: yup.string().max(255),
+    hours: yup.string().max(255),
+  })
+  .required();
 
-const schema = yup.object({
-  title: yup.string().max(255).required('Title is required'),
-  description: yup.string().max(255).required('Description is required'),
-  hours: yup.string().max(255).required('Hours is required'),
-}).required();
-
-type FormData = {
-  title: string;
-  description: string;
-  hours: string;
-};
-
-type Props = NativeStackScreenProps<MainStack, 'AddConsultancy'>;
-
-const AddConsultancyScreen = ({ navigation }: Props) => {
-  const theme = useTheme<Theme>();
-  const [addConsultancy, { isLoading }] = useAddConsultancyMutation();
-  const [selectedImage, setSelectedImage] = useState<any>(null);
+const AddConsultancyScreen = ({
+  navigation,
+}: NativeStackScreenProps<MainStack, 'AddConsultancy'>) => {
+  const { foreground, foreground_primary } = useThemeColors();
+  const { loadUserConsultancy } = useLoadAuth();
+  const [addCon, { isLoading }] = useAddConsultancyMutation();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
+    // getValues,
+  } = useForm({
     defaultValues: {
       title: '',
       description: '',
@@ -58,204 +55,219 @@ const AddConsultancyScreen = ({ navigation }: Props) => {
     },
     resolver: yupResolver(schema),
   });
+  const [assets, setAssets] = useState<ImagePicker.ImagePickerAsset[]>([]);
 
-  const selectImage = useCallback(async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showMessage({
-        message: 'Permission to access media library is required',
-        type: 'warning',
-      });
-      return;
-    }
-
+  const selectPic = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
-      quality: 0.7,
+      quality: 0.4,
     });
-
-    if (!result.canceled && result.assets[0]) {
-      setSelectedImage(result.assets[0]);
+    if (!result.canceled && result.assets) {
+      setAssets(result.assets);
     }
-  }, []);
+  };
 
-  const onSubmit = useCallback(async (data: FormData) => {
-    try {
-      if (!selectedImage) {
+  const proceed = useCallback(
+    async (cred: { [key: string]: string }) => {
+      try {
+        const { title, description, hours } = cred;
+
+        if (!title || !description || !hours || assets.length < 1) {
+          showMessage({
+            message: 'Kindly fill all fields to proceed',
+            type: 'danger',
+          });
+          return;
+        }
+
+        const body = new FormData();
+        body.append('title', title);
+        body.append('hours', hours);
+        body.append('description', description);
+        if (assets?.length) {
+          body.append('file', {
+            uri: assets[0]?.uri,
+            name: assets[0].fileName || 'image.jpg',
+            type: assets[0].mimeType || 'image/jpeg',
+          } as any);
+        }
+        const response = await addCon(body);
+        console.log('consultancy response', JSON.stringify(response));
+        if (response?.error) {
+          const err = response as ErrorData;
+          showMessage({
+            message:
+              err?.error?.data?.message ||
+              err?.error?.data?.error ||
+              'Something went wrong',
+            type: 'danger',
+          });
+          return;
+        }
         showMessage({
-          message: 'Please select an image for your service',
-          type: 'warning',
+          message: 'Profile updated',
+          type: 'success',
         });
-        return;
+        loadUserConsultancy();
+        navigation?.goBack();
+      } catch (error) {
+        console.log('wwork error:', error);
       }
-
-      const formData = new FormData();
-      formData.append('title', data.title);
-      formData.append('description', data.description);
-      formData.append('hours', data.hours);
-      formData.append('file', {
-        uri: selectedImage.uri,
-        name: 'service-image.jpg',
-        type: 'image/jpeg',
-      } as any);
-
-      const response = await addConsultancy(formData);
-
-      if (response?.error) {
-        const err = response as any;
-        showMessage({
-          message: err?.error?.data?.message || 'Failed to add service',
-          type: 'danger',
-        });
-        return;
-      }
-
-      showMessage({
-        message: 'Service added successfully!',
-        type: 'success',
-      });
-
-      navigation.goBack();
-    } catch (error) {
-      console.log('add consultancy error:', error);
-      showMessage({
-        message: 'Failed to add service',
-        type: 'danger',
-      });
-    }
-  }, [selectedImage, addConsultancy, navigation]);
+    },
+    [assets, addCon, navigation, loadUserConsultancy],
+  );
 
   return (
     <BaseScreenComponent>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <Box flex={1}>
+      <TouchableWithoutFeedback style={{ flex: 1 }} onPress={Keyboard.dismiss}>
+        <Box flex={1} backgroundColor="background">
           <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={{ flex: 1 }}>
+              keyboardVerticalOffset={15}
+              // enabled={Platform.OS === 'ios'}
+              behavior={Platform.OS === 'ios' ? 'height' : 'padding'}
+              style={{ flex: 1 }}
+              contentContainerStyle={{ flex: 1 }}>
               <Box flex={1}>
-                {/* Header */}
                 <Box
                   flexDirection="row"
                   alignItems="center"
                   paddingHorizontal="l"
-                  paddingVertical="m"
-                  gap="m">
-                  <TouchableOpacity onPress={navigation.goBack}>
-                    <MaterialCommunityIcons
-                      name="chevron-left"
-                      size={24}
-                      color={theme.colors.foreground}
-                    />
-                  </TouchableOpacity>
-                  
+                  gap="mid"
+                  paddingVertical="mid">
+                  <Box>
+                    <TouchableOpacity
+                      onPress={navigation.goBack}
+                      style={{ padding: 8, paddingLeft: 0 }}>
+                      <MaterialCommunityIcons
+                        name="chevron-left"
+                        size={24}
+                        color={foreground}
+                      />
+                    </TouchableOpacity>
+                  </Box>
                   <Box flex={1} alignItems="center">
-                    <Text variant="semibold" fontSize={18}>
+                    <Text
+                      variant="semibold"
+                      fontSize={20}
+                      textTransform="capitalize">
                       Add Service
                     </Text>
                   </Box>
-                  
-                  <Box width={24} />
-                </Box>
-
-                {/* Content */}
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  <Box padding="l" gap="l">
-                    {/* Service Title */}
-                    <Controller
-                      control={control}
-                      name="title"
-                      render={({ field: { onChange, value } }) => (
-                        <Input
-                          label="Service Title"
-                          placeholder="e.g., Web Development Consultation"
-                          value={value}
-                          onChangeText={onChange}
-                          error={errors.title?.message}
-                          required
-                        />
-                      )}
+                  <Box padding="s" opacity={0}>
+                    <MaterialCommunityIcons
+                      name="chevron-left"
+                      size={24}
+                      color={foreground}
                     />
-
-                    {/* Hours */}
-                    <Controller
-                      control={control}
-                      name="hours"
-                      render={({ field: { onChange, value } }) => (
-                        <Input
-                          label="Consulting Hours Available"
-                          placeholder="e.g., 40 hours per week"
-                          value={value}
-                          onChangeText={onChange}
-                          error={errors.hours?.message}
-                          required
-                        />
-                      )}
-                    />
-
-                    {/* Description */}
-                    <Controller
-                      control={control}
-                      name="description"
-                      render={({ field: { onChange, value } }) => (
-                        <Input
-                          label="Service Description"
-                          placeholder="Describe your service in detail..."
-                          value={value}
-                          onChangeText={onChange}
-                          error={errors.description?.message}
-                          multiline
-                          numberOfLines={4}
-                          textAlignVertical="top"
-                          required
-                        />
-                      )}
-                    />
-
-                    {/* Image Selection */}
-                    <Box>
-                      <Text variant="semibold" fontSize={14} marginBottom="s">
-                        Service Image
-                      </Text>
-                      <TouchableOpacity onPress={selectImage}>
-                        <Box
-                          height={200}
-                          backgroundColor="faded"
-                          borderRadius={8}
-                          justifyContent="center"
-                          alignItems="center"
-                          overflow="hidden">
-                          {selectedImage ? (
-                            <ScaledImage
-                              source={{ uri: selectedImage.uri }}
-                              style={{ width: '100%', height: '100%' }}
-                            />
-                          ) : (
-                            <Box alignItems="center" gap="s">
-                              <MaterialCommunityIcons
-                                name="image-plus"
-                                size={48}
-                                color={theme.colors.label}
-                              />
-                              <Text color="label">Tap to select image</Text>
-                            </Box>
-                          )}
-                        </Box>
-                      </TouchableOpacity>
-                    </Box>
-
-                    {/* Submit Button */}
-                    <Box marginTop="l">
-                      <Button
-                        displayText="Add Service"
-                        onPress={handleSubmit(onSubmit)}
-                        loading={isLoading}
-                      />
-                    </Box>
                   </Box>
-                </ScrollView>
+                </Box>
+                <Box flex={1}>
+                  <ScrollView showsVerticalScrollIndicator={false}>
+                    <Box paddingHorizontal="l">
+                      <Box>
+                        <Controller
+                          control={control}
+                          rules={{
+                            required: true,
+                          }}
+                          name="title"
+                          render={({ field: { onChange, value } }) => (
+                            <Input
+                              error={errors.title?.message}
+                              label="Service title"
+                              value={value}
+                              required
+                              onChangeText={onChange}
+                              placeholder="Service"
+                            />
+                          )}
+                        />
+                      </Box>
+                      <Box>
+                        <Controller
+                          control={control}
+                          rules={{
+                            required: true,
+                          }}
+                          name="hours"
+                          render={({ field: { onChange, value } }) => (
+                            <Input
+                              error={errors.hours?.message}
+                              label="How many consulting hours"
+                              value={value}
+                              onChangeText={onChange}
+                              placeholder="Hours"
+                            />
+                          )}
+                        />
+                      </Box>
+                      <Box>
+                        <Controller
+                          control={control}
+                          rules={{
+                            required: true,
+                          }}
+                          name="description"
+                          render={({ field: { onChange, value } }) => (
+                            <Input
+                              error={errors.description?.message}
+                              label="Service description"
+                              value={value}
+                              verticalAlign="top"
+                              height={120}
+                              multiline
+                              onChangeText={onChange}
+                              placeholder="Description"
+                            />
+                          )}
+                        />
+                      </Box>
+                      <Box marginBottom="xl">
+                        <TouchableOpacity onPress={selectPic}>
+                          <Box
+                            height={220}
+                            backgroundColor="searchbg"
+                            overflow="hidden"
+                            position="relative"
+                            borderRadius={8}
+                            justifyContent="center"
+                            alignItems="center">
+                            <MaterialCommunityIcons
+                              name="image"
+                              size={80}
+                              color={foreground_primary}
+                            />
+                            {assets.length > 0 && (
+                              <Box
+                                position="absolute"
+                                top={0}
+                                left={0}
+                                width="100%"
+                                height="100%"
+                                overflow="hidden">
+                                <Image
+                                  source={{
+                                    uri: assets[0]?.uri,
+                                  }}
+                                  style={{ height: '100%', width: '100%' }}
+                                />
+                              </Box>
+                            )}
+                          </Box>
+                        </TouchableOpacity>
+                      </Box>
+                      <Box>
+                        <Button
+                          loading={isLoading}
+                          onPress={handleSubmit(proceed)}
+                          displayText="Save"
+                        />
+                      </Box>
+                    </Box>
+                  </ScrollView>
+                </Box>
               </Box>
             </KeyboardAvoidingView>
           </SafeAreaView>

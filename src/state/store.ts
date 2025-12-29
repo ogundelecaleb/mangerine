@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 
 // Import API services
 import { authApi } from './services/auth.service';
@@ -15,19 +16,25 @@ import { workApi } from './services/work.service';
 // Import reducers
 import authReducer from './reducers/authSlice';
 import postsReducer from './reducers/posts.reducer';
+import userReducer from './reducers/user.reducer';
+import usersettingsReducer from './reducers/usersettings.reducer';
+import settingReducer from './reducers/setting.reducer';
+import groupsReducer from './reducers/groups.reducer';
+import chatReducer from './reducers/chat.reducer';
 
 // Persist configuration
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth'], // Only persist auth data
+  whitelist: ['auth', 'user', 'usersettings', 'chat'], // Persist these reducers
   blacklist: [
     authApi.reducerPath, 
     usersApi.reducerPath, 
     postsApi.reducerPath, 
     consultantsApi.reducerPath,
     appointmentApi.reducerPath,
-    availabilityApi.reducerPath
+    availabilityApi.reducerPath,
+    workApi.reducerPath
   ], // Don't persist API cache
 };
 
@@ -44,7 +51,12 @@ const rootReducer = combineReducers({
   
   // App state slices
   auth: authReducer,
+  user: userReducer,
+  usersettings: usersettingsReducer,
   posts: postsReducer,
+  groups: groupsReducer,
+  setting: settingReducer,
+  chat: chatReducer,
 });
 
 // Persisted reducer
@@ -58,13 +70,15 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(authApi.middleware)
-      .concat(usersApi.middleware)
-      .concat(postsApi.middleware)
-      .concat(consultantsApi.middleware)
-      .concat(appointmentApi.middleware)
-      .concat(availabilityApi.middleware)
-      .concat(workApi.middleware),
+    }).concat([
+      authApi.middleware,
+      usersApi.middleware,
+      postsApi.middleware,
+      consultantsApi.middleware,
+      appointmentApi.middleware,
+      availabilityApi.middleware,
+      workApi.middleware,
+    ]),
   devTools: __DEV__,
 });
 
@@ -74,3 +88,6 @@ export const persistor = persistStore(store);
 // Types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Setup listeners for RTK Query
+setupListeners(store.dispatch);

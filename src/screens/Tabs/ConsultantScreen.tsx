@@ -27,6 +27,7 @@ import { BottomTabList, MainStack } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
 import { useGetConsultantsMutation } from '../../state/services/consultants.service';
+import { useAuth } from '../../state/hooks/user.hook';
 
 interface Consultant {
   id: string;
@@ -49,6 +50,8 @@ const ConsultantScreen = ({}: Props) => {
   const [getConsultants, { isLoading }] = useGetConsultantsMutation();
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [activeTab, setActiveTab] = useState<'browse' | 'manage'>('browse');
+  const { user } = useAuth();
 
   const searchConsultants = useMemo(
     () =>
@@ -84,7 +87,7 @@ const ConsultantScreen = ({}: Props) => {
 
   useEffect(() => {
     loadConsultants();
-  }, [loadConsultants]);
+  }, []);
 
   return (
     <BaseScreenComponent>
@@ -135,75 +138,222 @@ const ConsultantScreen = ({}: Props) => {
                     marginBottom="m"
                     paddingHorizontal="l"
                     gap="m">
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setActiveTab('browse')}>
                       <Box
                         paddingBottom="s"
                         borderBottomWidth={2}
-                        borderBottomColor="primary">
-                        <Text fontSize={14} variant="semibold" color="primary">
-                          All Consultants
+                        borderBottomColor={activeTab === 'browse' ? 'primary' : 'transparent'}>
+                        <Text 
+                          fontSize={14} 
+                          variant="semibold" 
+                          color={activeTab === 'browse' ? 'primary' : 'label'}>
+                          Browse Consultants
                         </Text>
                       </Box>
                     </TouchableOpacity>
+                    {/* {user?.isConsultant && ( */}
+                    {user && (
+                      <TouchableOpacity onPress={() => setActiveTab('manage')}>
+                        <Box
+                          paddingBottom="s"
+                          borderBottomWidth={2}
+                          borderBottomColor={activeTab === 'manage' ? 'primary' : 'transparent'}>
+                          <Text 
+                            fontSize={14} 
+                            variant="semibold" 
+                            color={activeTab === 'manage' ? 'primary' : 'label'}>
+                            My Business
+                          </Text>
+                        </Box>
+                      </TouchableOpacity>
+                    )}
                   </Box>
 
                   <Box flex={1}>
-                    <FlatList
-                      contentContainerStyle={{
-                        paddingHorizontal: 24,
-                        gap: 16,
-                        paddingBottom: 40,
-                      }}
-                      refreshControl={
-                        <RefreshControl
-                          refreshing={isLoading}
-                          onRefresh={loadConsultants}
-                        />
-                      }
-                      data={searchConsultants}
-                      keyExtractor={({ id }) => id}
-                      renderItem={({ item }) => (
-                        <ConsultantItem consultant={item} />
-                      )}
-                      ListEmptyComponent={
-                        <Box paddingTop="xl">
-                          <EmptyState
-                            title="No consultants available"
-                            description="Check back later for available consultants"
+                    {activeTab === 'browse' ? (
+                      <FlatList
+                        contentContainerStyle={{
+                          paddingHorizontal: 24,
+                          gap: 16,
+                          paddingBottom: 40,
+                        }}
+                        refreshControl={
+                          <RefreshControl
+                            refreshing={isLoading}
+                            onRefresh={loadConsultants}
                           />
+                        }
+                        data={searchConsultants}
+                        keyExtractor={({ id }) => id}
+                        renderItem={({ item }) => (
+                          <ConsultantItem consultant={item} />
+                        )}
+                        ListEmptyComponent={
+                          <Box paddingTop="xl">
+                            <EmptyState
+                              title="No consultants available"
+                              description="Check back later for available consultants"
+                            />
+                          </Box>
+                        }
+                      />
+                    ) : (
+                      <Box paddingHorizontal="l" paddingTop="m">
+                        <Box gap="m">
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('Pricing')}>
+                            <Box
+                              flexDirection="row"
+                              alignItems="center"
+                              padding="m"
+                              backgroundColor="background"
+                              borderRadius={8}
+                              borderWidth={1}
+                              borderColor="faded">
+                              <Box
+                                width={40}
+                                height={40}
+                                borderRadius={20}
+                                backgroundColor="primary"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginRight="m">
+                                <MaterialCommunityIcons
+                                  name="currency-usd"
+                                  size={20}
+                                  color="white"
+                                />
+                              </Box>
+                              <Box flex={1}>
+                                <Text variant="semibold" fontSize={16}>
+                                  Pricing Settings
+                                </Text>
+                                <Text color="label" fontSize={12}>
+                                  Set your hourly rates and discounts
+                                </Text>
+                              </Box>
+                              <MaterialCommunityIcons
+                                name="chevron-right"
+                                size={20}
+                                color={theme.colors.label}
+                              />
+                            </Box>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('AvailabilitySettings')}>
+                            <Box
+                              flexDirection="row"
+                              alignItems="center"
+                              padding="m"
+                              backgroundColor="background"
+                              borderRadius={8}
+                              borderWidth={1}
+                              borderColor="faded">
+                              <Box
+                                width={40}
+                                height={40}
+                                borderRadius={20}
+                                backgroundColor="primary"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginRight="m">
+                                <MaterialCommunityIcons
+                                  name="calendar-clock"
+                                  size={20}
+                                  color="white"
+                                />
+                              </Box>
+                              <Box flex={1}>
+                                <Text variant="semibold" fontSize={16}>
+                                  Availability Settings
+                                </Text>
+                                <Text color="label" fontSize={12}>
+                                  Manage your consultation schedule
+                                </Text>
+                              </Box>
+                              <MaterialCommunityIcons
+                                name="chevron-right"
+                                size={20}
+                                color={theme.colors.label}
+                              />
+                            </Box>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            onPress={() => navigation.navigate('AddConsultancy')}>
+                            <Box
+                              flexDirection="row"
+                              alignItems="center"
+                              padding="m"
+                              backgroundColor="background"
+                              borderRadius={8}
+                              borderWidth={1}
+                              borderColor="faded">
+                              <Box
+                                width={40}
+                                height={40}
+                                borderRadius={20}
+                                backgroundColor="primary"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginRight="m">
+                                <MaterialCommunityIcons
+                                  name="briefcase-plus"
+                                  size={20}
+                                  color="white"
+                                />
+                              </Box>
+                              <Box flex={1}>
+                                <Text variant="semibold" fontSize={16}>
+                                  Manage Services
+                                </Text>
+                                <Text color="label" fontSize={12}>
+                                  Add and edit your consulting services
+                                </Text>
+                              </Box>
+                              <MaterialCommunityIcons
+                                name="chevron-right"
+                                size={20}
+                                color={theme.colors.label}
+                              />
+                            </Box>
+                          </TouchableOpacity>
                         </Box>
-                      }
-                    />
+                      </Box>
+                    )}
                   </Box>
                 </Box>
               </Box>
             </KeyboardAvoidingView>
           </SafeAreaView>
           
-          {/* Floating Add Button */}
-          <Box position="absolute" bottom={20} right={20}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('AddConsultancy')}>
-              <Box
-                width={56}
-                height={56}
-                borderRadius={28}
-                backgroundColor="primary"
-                justifyContent="center"
-                alignItems="center"
-                elevation={4}
-                shadowColor="black"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.25}
-                shadowRadius={4}>
-                <MaterialCommunityIcons
-                  name="plus"
-                  size={24}
-                  color="white"
-                />
-              </Box>
-            </TouchableOpacity>
-          </Box>
+          {/* Floating Add Button - Only show on browse tab */}
+          {activeTab === 'browse' && (
+            <Box position="absolute" bottom={20} right={20}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AddConsultancy')}>
+                <Box
+                  width={56}
+                  height={56}
+                  borderRadius={28}
+                  backgroundColor="primary"
+                  justifyContent="center"
+                  alignItems="center"
+                  elevation={4}
+                  shadowColor="black"
+                  shadowOffset={{ width: 0, height: 2 }}
+                  shadowOpacity={0.25}
+                  shadowRadius={4}>
+                  <MaterialCommunityIcons
+                    name="plus"
+                    size={24}
+                    color="white"
+                  />
+                </Box>
+              </TouchableOpacity>
+            </Box>
+          )}
         </Box>
       </TouchableWithoutFeedback>
     </BaseScreenComponent>

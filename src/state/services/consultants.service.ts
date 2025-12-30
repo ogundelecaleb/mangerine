@@ -95,6 +95,12 @@ export const consultantsApi = createApi({
         method: 'DELETE',
       }),
     }),
+    getFavoriteConsultants: builder.mutation({
+      query: () => ({
+        url: '/favorites',
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -109,4 +115,5 @@ export const {
   useRescheduleConsultationMutation,
   useUpdatePricingMutation,
   useCancelConsultationMutation,
+  useGetFavoriteConsultantsMutation,
 } = consultantsApi;

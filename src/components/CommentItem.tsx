@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '@/components/Box';
 import { CommentReplies, CompleteComment, ErrorData } from '@/utils/types';
 import moment from 'moment';
-import FastImage from 'react-native-fast-image';
+import { Image } from 'expo-image';
 import Text from './Text';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useThemeColors } from '@/hooks/useTheme';
@@ -26,6 +26,7 @@ interface Props {
   onReply: () => void;
   onDelete: () => void;
   lastUpdate?: string;
+  onCommentUpdate?: (updatedComment: CompleteComment) => void;
 }
 
 const ReplyItem = ({
@@ -87,7 +88,6 @@ const ReplyItem = ({
           userId: user?.id!,
         },
       });
-      console.log('likepost response:', JSON.stringify(response));
       if (response?.error) {
         if (wasUnliked) {
           setUnLiked(true);
@@ -146,7 +146,6 @@ const ReplyItem = ({
         return;
       }
     } catch (error) {
-      console.log('unlike r error:', error);
       if (wasLiked) {
         setLiked(true);
       } else {
@@ -178,7 +177,7 @@ const ReplyItem = ({
                 borderRadius={40}
                 overflow="hidden"
                 backgroundColor="black">
-                <FastImage
+                <Image
                   source={{ uri: r?.author?.profilePics || '' }}
                   style={{
                     height: '100%',
@@ -186,6 +185,7 @@ const ReplyItem = ({
                     borderRadius: 50,
                     overflow: 'hidden',
                   }}
+                  contentFit="cover"
                 />
               </Box>
             </Box>
@@ -374,7 +374,7 @@ const ReplyItem = ({
   );
 };
 
-const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
+const CommentItem = ({ comment, onReply, lastUpdate, onDelete, onCommentUpdate }: Props) => {
   const { foreground, label, danger, foreground_primary, background } =
     useThemeColors();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -393,25 +393,35 @@ const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
 
   const likePost = useCallback(async () => {
     const wasUnliked = unliked;
+    const optimisticComment = {
+      ...comment,
+      likeCount: wasUnliked ? comment.likeCount : comment.likeCount + 1,
+      likes: wasUnliked ? comment.likes : [...(comment.likes || []), { id: user?.id }]
+    };
+    
     try {
       if (wasUnliked) {
         setUnLiked(false);
       } else {
         setLiked(true);
       }
+      
+      onCommentUpdate?.(optimisticComment);
+      
       const response = await like({
         id: comment.id as any,
         body: {
           userId: user?.id!,
         },
       });
-      // console.log('likepost response:', JSON.stringify(response));
+      
       if (response?.error) {
         if (wasUnliked) {
           setUnLiked(true);
         } else {
           setLiked(false);
         }
+        onCommentUpdate?.(comment);
         const err = response as ErrorData;
         showMessage({
           message:
@@ -429,30 +439,41 @@ const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
       } else {
         setLiked(false);
       }
+      onCommentUpdate?.(comment);
     }
-  }, [like, comment?.id, unliked, user]);
+  }, [like, comment, unliked, user, onCommentUpdate]);
 
   const unlikePost = useCallback(async () => {
     const wasLiked = liked;
+    const optimisticComment = {
+      ...comment,
+      likeCount: wasLiked ? comment.likeCount : comment.likeCount - 1,
+      likes: wasLiked ? comment.likes : (comment.likes || []).filter(l => l.id !== user?.id)
+    };
+    
     try {
       if (wasLiked) {
         setLiked(false);
       } else {
         setUnLiked(true);
       }
+      
+      onCommentUpdate?.(optimisticComment);
+      
       const response = await unlike({
         id: comment.id as any,
         body: {
           userId: user?.id!,
         },
       });
-      // console.log('unlikepost response:', JSON.stringify(response));
+      
       if (response?.error) {
         if (wasLiked) {
           setLiked(true);
         } else {
           setUnLiked(false);
         }
+        onCommentUpdate?.(comment);
         const err = response as ErrorData;
         showMessage({
           message:
@@ -470,8 +491,9 @@ const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
       } else {
         setUnLiked(false);
       }
+      onCommentUpdate?.(comment);
     }
-  }, [liked, comment?.id, unlike, user]);
+  }, [liked, comment, unlike, user, onCommentUpdate]);
 
   const removePost = useCallback(async () => {
     try {
@@ -568,7 +590,7 @@ const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
                   borderRadius={50}
                   overflow="hidden"
                   backgroundColor="black">
-                  <FastImage
+                  <Image
                     source={{ uri: comment?.author?.profilePics || '' }}
                     style={{
                       height: '100%',
@@ -576,6 +598,7 @@ const CommentItem = ({ comment, onReply, lastUpdate, onDelete }: Props) => {
                       borderRadius: 50,
                       overflow: 'hidden',
                     }}
+                    contentFit="cover"
                   />
                 </Box>
               </Box>

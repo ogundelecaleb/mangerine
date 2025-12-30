@@ -25,12 +25,13 @@ import setting from './reducers/setting.reducer';
 import posts from './reducers/posts.reducer';
 import groups from './reducers/groups.reducer';
 import chat from './reducers/chat.reducer';
+import { SettingApi } from './services/setting.service';
 
 const persistConfig = {
   key: 'root',
   version: 1,
   storage: AsyncStorage,
-  whitelist: ['user', 'usersettings', 'chat'],
+  whitelist: ['user', 'usersettings', 'chat', 'setting'],
 };
 
 const reducers = combineReducers({
@@ -49,6 +50,7 @@ const reducers = combineReducers({
   [workApi.reducerPath]: workApi.reducer,
   [educationApi.reducerPath]: educationApi.reducer,
   [experienceApi.reducerPath]: experienceApi.reducer,
+  [SettingApi.reducerPath]: SettingApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducers);
@@ -68,12 +70,12 @@ export const store = configureStore({
       workApi.middleware,
       educationApi.middleware,
       experienceApi.middleware,
+      SettingApi.middleware
     ]),
 });
 
 export const persistor = persistStore(store);
 
-export type Root = ReturnType<typeof store.getState>;
-export type RootState = Root & PersistPartial;
+export type RootState = ReturnType<typeof reducers>;
 export type AppDispatch = typeof store.dispatch;
 setupListeners(store.dispatch);

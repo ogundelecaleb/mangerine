@@ -23,7 +23,6 @@ import { showMessage } from 'react-native-flash-message';
 import { useAuth } from '@/state/hooks/user.hook';
 import { useLoadAuth } from '@/state/hooks/loadauth.hook';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal';
-import CheckBox from '@/components/CheckBox';
 import EmptyState from '@/components/EmptyState';
 import Select from '@/components/Select';
 import {
@@ -31,6 +30,7 @@ import {
   useDeleteExperienceMutation,
   useUpdateExperienceMutation,
 } from '@/state/services/experience.service';
+import CheckBox from '@/components/Checkbox';
 
 const ManageExperienceScreen = ({
   navigation,
@@ -298,7 +298,7 @@ const ManageExperienceScreen = ({
                               label="Employment Type"
                               onSelect={v => {
                                 const newEditable = [...editables];
-                                newEditable[index].title = v;
+                                newEditable[index].employment_type = v;
                                 setEditables(newEditable);
                               }}
                               data={[

@@ -16,7 +16,6 @@ import BaseScreenComponent from '@/components/BaseScreenComponent';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useThemeColors } from '@/hooks/useTheme';
 import Select from '@/components/Select';
-import { useSetting } from '@/state/hooks/setting.hook';
 import { useDispatch } from 'react-redux';
 import { setTheme } from '@/state/reducers/setting.reducer';
 import { useUserSettings } from '@/state/hooks/usersettings.hook';
@@ -26,6 +25,7 @@ import { useGetGeneralSettingsMutation } from '@/state/services/setting.service'
 import { ErrorData } from '@/utils/types';
 import { showMessage } from 'react-native-flash-message';
 import Button from '@/components/Button';
+import { useSetting } from '@/state/hooks/setting.hook';
 
 const GeneralSettingscreen = ({
   navigation,

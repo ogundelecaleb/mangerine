@@ -161,8 +161,10 @@ const ManageEducationScreen = ({
   }, [selectedDeleteId, deleteEducation, loadUserEducation]);
 
   useEffect(() => {
-    setEditables(education);
-  }, [education]);
+    if (education.length > 0 && editables.length === 0) {
+      setEditables(education);
+    }
+  }, [education, editables.length]);
 
   return (
     <BaseScreenComponent>

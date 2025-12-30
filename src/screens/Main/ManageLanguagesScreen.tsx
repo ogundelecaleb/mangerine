@@ -274,7 +274,7 @@ const ManageLanguagesScreen = ({
                                 { title: 'Advanced', value: 'advanced' },
                                 { title: 'Native', value: 'native' },
                               ]}
-                              value={s.proficiency}
+                              value={s.proficiency!}
                             />
                           </Box>
                           {s.id?.startsWith('temp-') && (

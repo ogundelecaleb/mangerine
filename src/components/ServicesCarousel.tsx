@@ -1,91 +1,229 @@
-import React from 'react';
-import { FlatList, TouchableOpacity } from 'react-native';
+import { Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import Box from './Box';
+import { useAuth } from '@/state/hooks/user.hook';
+import { SwipeIndicator } from '@/screens/Authentication/OnboardingScreen';
+import Text from './Text';
+import { useThemeColors } from '@/hooks/useTheme';
+import FontelloCocoIcon from '@/utils/custom-fonts/FontelloCocoIcon';
+import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MainStack } from '@/utils/ParamList';
+import { exampleconsultationTime } from '@/screens/Main/ViewProfileScreen';
+import { Consultancy } from '@/utils/types';
+import { examplePricingData } from '@/state/reducers/user.reducer';
 
-import Box from './Box';
-import Text from './Text';
-import { MainStack } from '../utils/ParamList';
-import { useAuth } from '../state/hooks/user.hook';
-import { useTheme } from '@shopify/restyle';
-import { Theme } from '../utils/theme';
+interface Props {
+  consultationTime?: typeof exampleconsultationTime;
+  userConsultancy?: Consultancy[];
+  pricingData?: typeof examplePricingData;
+}
 
-const ServicesCarousel = () => {
-  const { services = [] } = useAuth();
-  const theme = useTheme<Theme>();
+const ServicesCarousel = ({
+  consultationTime,
+  userConsultancy,
+  pricingData,
+}: Props) => {
+  const { services = [], pricingData: mainPricingData } = useAuth();
+  const [snapItem, setSnapItem] = useState(0);
+  const { foreground, label, foreground_primary } = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<MainStack>>();
 
-  const renderServiceItem = ({ item }: { item: any }) => (
-    <Box
-      width={200}
-      marginRight="m"
-      backgroundColor="background"
-      borderRadius={8}
-      padding="m"
-      shadowColor="foreground"
-      shadowOpacity={0.1}
-      shadowRadius={4}
-      elevation={2}
-      shadowOffset={{
-        height: 0,
-        width: 0,
-      }}>
-      <Box
-        height={100}
-        borderRadius={6}
-        backgroundColor="faded"
-        marginBottom="s"
-        overflow="hidden"
-        justifyContent="center"
-        alignItems="center">
-        <MaterialCommunityIcons
-          name="briefcase"
-          size={40}
-          color={theme.colors.label}
-        />
-      </Box>
-      <Text variant="semibold" fontSize={14} numberOfLines={2}>
-        {item.title}
-      </Text>
-      <Text fontSize={12} color="label" numberOfLines={3} marginTop="xs">
-        {item.description}
-      </Text>
-      <Box flexDirection="row" alignItems="center" marginTop="s">
-        <MaterialCommunityIcons
-          name="clock-outline"
-          size={14}
-          color={theme.colors.label}
-        />
-        <Text fontSize={12} color="label" marginLeft="xs">
-          {item.hours} hours
-        </Text>
-      </Box>
-    </Box>
-  );
-
   return (
-    <Box>
-      <FlatList
-        data={services}
-        renderItem={renderServiceItem}
-        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 0,
-        }}
-      />
-      {services.length > 0 && (
-        <Box alignItems="center" marginTop="m">
-          <TouchableOpacity
-            onPress={() => navigation.navigate('AddConsultancy')}>
-            <Text fontSize={14} variant="semibold" color="primary">
-              Manage Services
+    <Box gap="m">
+      <Box backgroundColor="primary_background" padding="m" borderRadius={8}>
+        <Box
+          flexDirection="row"
+          marginBottom="s"
+          alignItems="center"
+          justifyContent="space-between">
+          <Box>
+            <Text variant="semibold" fontSize={18}>
+              Consulting Services
             </Text>
-          </TouchableOpacity>
+          </Box>
+          <Box>
+            {!consultationTime && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AddConsultancy')}>
+                <FontelloCocoIcon name="edit-1" size={24} color={foreground} />
+              </TouchableOpacity>
+            )}
+          </Box>
         </Box>
-      )}
+        <Box
+          alignItems="center"
+          backgroundColor="primary_background"
+          borderRadius={6}
+          elevation={4}
+          shadowColor="foreground"
+          shadowOpacity={0.1}
+          shadowRadius={4}
+          shadowOffset={{
+            height: 0,
+            width: 0,
+          }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            onMomentumScrollEnd={(event) => {
+              const slideIndex = Math.round(
+                event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 48 - 32)
+              );
+              setSnapItem(slideIndex);
+            }}>
+            {(userConsultancy || services).map((item, index) => (
+              <Box key={index} width={Dimensions.get('window').width - 48 - 32}>
+                <Box gap="s" padding="s">
+                  <Box
+                    height={120}
+                    borderRadius={4}
+                    overflow="hidden">
+                    <Image
+                      style={{ height: '100%', width: '100%' }}
+                      source={{ uri: item?.file }}
+                      contentFit="cover"
+                    />
+                  </Box>
+                  <Box gap="s">
+                    <Box>
+                      <Text variant="semibold">
+                        {item?.title} {item?.hours}hr(s)
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Text numberOfLines={3}>{item?.description}</Text>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </ScrollView>
+        </Box>
+        <Box marginTop="m">
+          <Box
+            width="100%"
+            alignItems="center"
+            flexDirection="row"
+            justifyContent="center"
+            gap="xs">
+            {(userConsultancy || services).map((_, i) => (
+              <SwipeIndicator
+                activeColor={foreground_primary}
+                inactiveColor={label}
+                key={i}
+                active={snapItem === i}
+              />
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      <Box backgroundColor="primary_background" padding="m" borderRadius={8}>
+        <Box
+          flexDirection="row"
+          marginBottom="s"
+          alignItems="center"
+          justifyContent="space-between">
+          <Box>
+            <Text variant="semibold" fontSize={18}>
+              Available Time
+            </Text>
+          </Box>
+          <Box>
+            {!consultationTime && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AvailabilitySettings')}>
+                <FontelloCocoIcon name="edit-1" size={24} color={foreground} />
+              </TouchableOpacity>
+            )}
+          </Box>
+        </Box>
+        {consultationTime !== undefined && (
+          <Box paddingTop="s" gap="s">
+            {consultationTime?.availability?.map(x => (
+              <Box key={x?.day}>
+                <Text fontSize={16} variant="medium">
+                  {x?.day}:{' '}
+                  {x?.slots?.map(xx => `${xx?.from} - ${xx?.to}`)?.join(', ')}{' '}
+                  {consultationTime?.timezone}
+                </Text>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Box>
+
+      <Box backgroundColor="primary_background" padding="m" borderRadius={8}>
+        <Box
+          flexDirection="row"
+          marginBottom="s"
+          alignItems="center"
+          justifyContent="space-between">
+          <Box>
+            <Text variant="semibold" fontSize={18}>
+              Pricing
+            </Text>
+          </Box>
+          <Box>
+            {!consultationTime && (
+              <TouchableOpacity onPress={() => navigation.navigate('Pricing')}>
+                <FontelloCocoIcon name="edit-1" size={24} color={foreground} />
+              </TouchableOpacity>
+            )}
+          </Box>
+        </Box>
+        {pricingData !== undefined ? (
+          <Box paddingTop="s" gap="s">
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Flat Price: {pricingData?.flatPrice} {pricingData?.currency}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Two Hours Discount: {pricingData?.twoHoursDiscount}%
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Three Hours Discount: {pricingData?.threeHoursDiscount}%
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Four Hours Discount: {pricingData?.fourHoursDiscount}%
+              </Text>
+            </Box>
+          </Box>
+        ) : (
+          <Box paddingTop="s" gap="s">
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Flat Price: {mainPricingData?.flatPrice}{' '}
+                {mainPricingData?.currency}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Two Hours Discount: {mainPricingData?.twoHoursDiscount}%
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Three Hours Discount: {mainPricingData?.threeHoursDiscount}%
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={16} variant="medium">
+                Four Hours Discount: {mainPricingData?.fourHoursDiscount}%
+              </Text>
+            </Box>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

@@ -41,7 +41,7 @@ import {
 import { Comment, CompleteComment, ErrorData } from '@/utils/types';
 import { showMessage } from 'react-native-flash-message';
 import PostItem from '@/components/PostItem';
-import FastImage from 'react-native-fast-image';
+import { Image } from 'expo-image';
 import BaseScreenComponent from '@/components/BaseScreenComponent';
 import CommentItem from '@/components/CommentItem';
 import { orderBy } from 'lodash';
@@ -233,12 +233,12 @@ const PostDetailsScreen = ({
       });
 
       setComments(mixedComments);
-      setActivePost({
-        ...post,
+      setActivePost(prevPost => ({
+        ...prevPost,
         commentCount: (response as any)?.data?.commentCount,
         reportCount: (response as any)?.data?.reportCount,
         likeCount: (response as any)?.data?.likeCount,
-      });
+      }));
     } catch (error) {
       console.log('add comment error:', error);
     }
@@ -281,6 +281,14 @@ const PostDetailsScreen = ({
       console.log('add comment error:', error);
     }
   }, [comment, replyId, postCommentReply, user?.id, fetchComments]);
+
+  const handleCommentUpdate = useCallback((updatedComment: CompleteComment) => {
+    setComments(prevComments =>
+      prevComments.map(comment =>
+        comment.id === updatedComment.id ? updatedComment : comment,
+      ),
+    );
+  }, []);
 
   const refreshAll = useCallback(async () => {
     if (commentsPage === 1) {
@@ -514,6 +522,7 @@ const PostDetailsScreen = ({
                                   comments.filter(comm => comm.id !== item.id),
                                 );
                               }}
+                              onCommentUpdate={handleCommentUpdate}
                             />
                           </Box>
                         </TouchableOpacity>
@@ -543,14 +552,14 @@ const PostDetailsScreen = ({
                         width={48}
                         borderRadius={48}
                         backgroundColor="black">
-                        <FastImage
+                        <Image
                           style={{
                             height: '100%',
                             width: '100%',
                             borderRadius: 50,
                             overflow: 'hidden',
                           }}
-                          resizeMode="cover"
+                          contentFit="cover"
                           source={{
                             uri: user?.profilePics || '',
                           }}

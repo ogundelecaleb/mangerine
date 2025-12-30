@@ -27,10 +27,7 @@ import SettingsScreen from '../screens/Main/SettingsScreen';
 import UpdateContactScreen from '../screens/Main/UpdateContactScreen';
 import UserFollowersScreen from '../screens/Main/UserFollowersScreen';
 import UserFollowingScreen from '../screens/Main/UserFollowingScreen';
-import {
-  ManageExperienceScreen,
-  UserPostsScreen,
-} from '../screens/Main/ProfileManagementScreens';
+import { UserPostsScreen } from '../screens/Main/ProfileManagementScreens';
 import BookConsultationScreen from '../screens/Main/BookConsultationScreen';
 import MyConsultationScreen from '../screens/Main/MyConsultationScreen';
 import AddConsultancyScreen from '../screens/Main/AddConsultancyScreen';
@@ -49,16 +46,25 @@ import AddWorkScreen from '@/screens/Main/AddWorkScreen';
 import ManageLanguagesScreen from '@/screens/Main/ManageLanguagesScreen';
 import ManageSkillsScreen from '@/screens/Main/ManageSkillsScreen';
 import ManageEducationScreen from '@/screens/Main/ManageEducationScreen';
+import ManageExperienceScreen from '@/screens/Main/ManageExperienceScreen';
+import ViewProfileScreen from '@/screens/Main/ViewProfileScreen';
+import PostDetailsScreen from '@/screens/Post/PostDetailsScreen';
+import SecuritySettingscreen from '@/screens/Main/SecuritySettingScreen';
+import PrivacySettingscreen from '@/screens/Main/PrivacySettingScreen';
+import NotificationSettingscreen from '@/screens/Main/NotificationSettingsScreen';
+import PaymentSettingscreen from '@/screens/Main/PaymentSettingsScreen';
+import AccountSettingScreen from '@/screens/Main/AccountSettingScreen';
+import GeneralSettingscreen from '@/screens/Main/GeneralSettingScreen';
+import HelpAndSupportcreen from '@/screens/Main/HelpAndSupportScreen';
 
 const Stack = createNativeStackNavigator<MainStack>();
 
 const MainNavigator = () => {
   let token, authTrigger, authBlocked, user;
-  
+
   try {
     const authResult = useAuth();
-    
-    
+
     if (authResult && typeof authResult === 'object') {
       ({ token, authTrigger, authBlocked, user } = authResult);
     } else {
@@ -138,48 +144,134 @@ const MainNavigator = () => {
         screenOptions={{
           headerShown: false,
         }}>
-        
         {!(token && user && !authBlocked) ? (
           <Stack.Group>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-            <Stack.Screen name="ForgotPasswordOTP" component={ForgotPasswordOTPScreen} />
-            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPasswordScreen}
+            />
+            <Stack.Screen
+              name="ForgotPasswordOTP"
+              component={ForgotPasswordOTPScreen}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              component={ResetPasswordScreen}
+            />
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="SignupOTP" component={SignupOTPScreen} />
-            <Stack.Screen name="FinishRegistration" component={FinishRegistrationScreen} />
+            <Stack.Screen
+              name="FinishRegistration"
+              component={FinishRegistrationScreen}
+            />
             <Stack.Screen name="SignupAvatar" component={SignupAvatarScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>
             <Stack.Screen name="Tabs" component={BottomTabNavigator} />
             <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+            <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="ViewProfile" component={ViewProfileScreen} />
             <Stack.Screen name="AddWork" component={AddWorkScreen} />
-            <Stack.Screen name="AddConsultancy" component={AddConsultancyScreen} />
+            <Stack.Screen
+              name="AddConsultancy"
+              component={AddConsultancyScreen}
+            />
             <Stack.Screen name="UserPosts" component={UserPostsScreen} />
             <Stack.Screen name="UserWorks" component={UserWorksScreen} />
-            <Stack.Screen name="UpdateContact" component={UpdateContactScreen} />
+            <Stack.Screen
+              name="UpdateContact"
+              component={UpdateContactScreen}
+            />
             <Stack.Screen name="ManageSkills" component={ManageSkillsScreen} />
-            <Stack.Screen name="ManageEducation" component={ManageEducationScreen} />
-            <Stack.Screen name="ManageExperience" component={ManageExperienceScreen} />
-            <Stack.Screen name="ManageLanguages" component={ManageLanguagesScreen} />
-            <Stack.Screen name="BookConsultation" component={BookConsultationScreen} />
-            <Stack.Screen name="PayConsultation" component={PayConsultationScreen} />
+            <Stack.Screen
+              name="ManageEducation"
+              component={ManageEducationScreen}
+            />
+            <Stack.Screen
+              name="ManageExperience"
+              component={ManageExperienceScreen}
+            />
+            <Stack.Screen
+              name="ManageLanguages"
+              component={ManageLanguagesScreen}
+            />
+            <Stack.Screen
+              name="BookConsultation"
+              component={BookConsultationScreen}
+            />
+            <Stack.Screen
+              name="PayConsultation"
+              component={PayConsultationScreen}
+            />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="MyBusiness" component={MyBusinessScreen} />
             <Stack.Screen name="Dashboard" component={MyDashboardScreen} />
-            <Stack.Screen name="AvailabilitySettings" component={AvailabilitySettingsScreen} />
-            <Stack.Screen name="MeetingPreference" component={MeetingPreferenceScreen} />
+            <Stack.Screen
+              name="AvailabilitySettings"
+              component={AvailabilitySettingsScreen}
+            />
+            <Stack.Screen
+              name="MeetingPreference"
+              component={MeetingPreferenceScreen}
+            />
             <Stack.Screen name="Pricing" component={PricingScreen} />
             <Stack.Screen name="CalendarView" component={CalendarViewScreen} />
-            <Stack.Screen name="MyConsultation" component={MyConsultationScreen} />
-            <Stack.Screen name="ScheduledConsultation" component={ScheduledConsultationScreen} />
-            <Stack.Screen name="RescheduleConsultation" component={RescheduleConsultationScreen} />
-            <Stack.Screen name="FavouriteConsultants" component={FavoriteConsultantsScreen} />
-            <Stack.Screen name="UserFollowing" component={UserFollowingScreen} />
-            <Stack.Screen name="UserFollowers" component={UserFollowersScreen} />
+            <Stack.Screen
+              name="MyConsultation"
+              component={MyConsultationScreen}
+            />
+            <Stack.Screen
+              name="ScheduledConsultation"
+              component={ScheduledConsultationScreen}
+            />
+            <Stack.Screen
+              name="RescheduleConsultation"
+              component={RescheduleConsultationScreen}
+            />
+            <Stack.Screen
+              name="FavouriteConsultants"
+              component={FavoriteConsultantsScreen}
+            />
+            <Stack.Screen
+              name="UserFollowing"
+              component={UserFollowingScreen}
+            />
+            <Stack.Screen
+              name="UserFollowers"
+              component={UserFollowersScreen}
+            />
+            <Stack.Screen
+              name="AccountSettings"
+              component={AccountSettingScreen}
+            />
+            <Stack.Screen
+              name="PrivacySettings"
+              component={PrivacySettingscreen}
+            />
+            <Stack.Screen
+              name="NotificationSettings"
+              component={NotificationSettingscreen}
+            />
+            <Stack.Screen
+              name="PaymentSettings"
+              component={PaymentSettingscreen}
+            />
+            <Stack.Screen
+              name="SecuritySettings"
+              component={SecuritySettingscreen}
+            />
+            <Stack.Screen
+              name="GeneralSettings"
+              component={GeneralSettingscreen}
+            />
+            <Stack.Screen
+              name="HelpAndSupport"
+              component={HelpAndSupportcreen}
+            />
           </Stack.Group>
         )}
       </Stack.Navigator>

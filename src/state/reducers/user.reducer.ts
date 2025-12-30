@@ -9,6 +9,7 @@ import {
   Skill,
   User,
   UserType,
+  Work,
 } from '@/utils/types';
 
 export const examplePricingData = {
@@ -38,6 +39,7 @@ type AuthState = {
   follows?: User[];
   followerCount?: number;
   followsCount?: number;
+  works?: Work[];
   pricingData: typeof examplePricingData;
 };
 
@@ -56,6 +58,7 @@ const slice = createSlice({
     followers: [],
     follows: [],
     followsCount: 0,
+    works: [],
     pricingData: examplePricingData,
   } as AuthState,
   reducers: {
@@ -172,6 +175,12 @@ const slice = createSlice({
     ) => {
       state.follows = value;
     },
+    setWorks: (
+      state,
+      { payload: { value } }: PayloadAction<{ value: Work[] }>,
+    ) => {
+      state.works = value;
+    },
     signUserOut: state => {
       state.token = undefined;
       state.user = undefined;
@@ -182,6 +191,7 @@ const slice = createSlice({
       state.follows = [];
       state.followerCount = 0;
       state.followsCount = 0;
+      state.works = [];
     },
   },
 });
@@ -205,6 +215,7 @@ export const {
   setFollowsCount,
   setServices,
   setPricingData,
+  setWorks,
 } = slice.actions;
 
 export default slice.reducer;

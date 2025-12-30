@@ -8,6 +8,7 @@ const palette = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
+  gray: "#f2f2f2",
   
   // Border and text colors
   border: '#1C1B1B',

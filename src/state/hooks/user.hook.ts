@@ -24,6 +24,7 @@ export const useAuth = () => {
       follows: [],
       followerCount: 0,
       followsCount: 0,
+      works: [],
       pricingData: {
         flatPrice: '0',
         dayBookPercentage: 0,
@@ -52,6 +53,7 @@ export const useAuth = () => {
     follows: authValues.follows ?? [],
     followerCount: authValues.followerCount ?? 0,
     followsCount: authValues.followsCount ?? 0,
+    works: authValues.works ?? [],
     pricingData: authValues.pricingData ?? {
       flatPrice: '0',
       dayBookPercentage: 0,

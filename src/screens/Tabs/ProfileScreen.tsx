@@ -11,7 +11,6 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { BottomTabList, MainStack } from '../../utils/ParamList';
 import { useAuth } from '../../state/hooks/user.hook';
 import { Image } from 'expo-image';
-import CocoIcon from '../../utils/custom-fonts/CocoIcon';
 import Text from '../../components/Text';
 import { useThemeColors } from '../../hooks/useTheme';
 import { addAlpha } from '../../utils/helpers';
@@ -58,6 +57,7 @@ const ProfileScreen = ({
     followsCount = 0,
     services = [],
   } = useAuth();
+  console.log("user", user?.works)
   const { label, foreground_primary, foreground } = useThemeColors();
   const mainNavigation =
     useNavigation<NativeStackNavigationProp<MainStack, 'Tabs'>>();
@@ -376,8 +376,8 @@ const ProfileScreen = ({
                             onPress={() => {
                               mainNavigation.navigate('EditProfile');
                             }}>
-                            <CocoIcon
-                              name="edit-1"
+                            <MaterialCommunityIcons
+                              name="pencil"
                               size={24}
                               color={foreground_primary}
                             />
@@ -393,7 +393,7 @@ const ProfileScreen = ({
                             alignItems="flex-start"
                             flex={1}
                             maxWidth={user?.dateOfBirth ? '42%' : undefined}>
-                            <CocoIcon name="location" size={16} color={label} />
+                            <MaterialCommunityIcons name="map-marker" size={16} color={label} />
                             <Text numberOfLines={3} fontSize={10}>
                               {user?.location}
                             </Text>
@@ -403,7 +403,7 @@ const ProfileScreen = ({
                               flex={1}
                               flexDirection="row"
                               alignItems="center">
-                              <CocoIcon name="user" size={16} color={label} />
+                              <MaterialCommunityIcons name="account" size={16} color={label} />
                               <Text fontSize={10}>
                                 Born{' '}
                                 {moment(user?.dateOfBirth).format('D MMMM')}
@@ -415,8 +415,26 @@ const ProfileScreen = ({
                     </Box>
                   </Box>
                   <Box marginTop="s" marginBottom="m">
-                    <Box marginTop="mid">
-                      <Text numberOfLines={3}>{user?.bio}</Text>
+                    <Box
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      marginTop="mid">
+                      <Box flex={1}>
+                        <Text numberOfLines={3}>{user?.bio}</Text>
+                      </Box>
+                      <Box>
+                        <TouchableOpacity
+                          onPress={() => {
+                            mainNavigation.navigate('EditProfile');
+                          }}>
+                          <MaterialCommunityIcons
+                            name="pencil"
+                            size={18}
+                            color={foreground}
+                          />
+                        </TouchableOpacity>
+                      </Box>
                     </Box>
                   </Box>
                   <Box flexDirection="row" alignItems="center" gap="m">
@@ -556,8 +574,8 @@ const ProfileScreen = ({
                       </Box>
                       <Box>
                         <TouchableOpacity onPress={() => selectAvatar('video')}>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />
@@ -607,8 +625,8 @@ const ProfileScreen = ({
                           onPress={() => {
                             mainNavigation.navigate('UpdateContact');
                           }}>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />
@@ -651,8 +669,8 @@ const ProfileScreen = ({
                           onPress={() =>
                             mainNavigation.navigate('ManageSkills')
                           }>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />
@@ -712,8 +730,8 @@ const ProfileScreen = ({
                           onPress={() =>
                             mainNavigation.navigate('ManageEducation')
                           }>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />
@@ -781,8 +799,8 @@ const ProfileScreen = ({
                           onPress={() =>
                             mainNavigation.navigate('ManageExperience')
                           }>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />
@@ -849,8 +867,8 @@ const ProfileScreen = ({
                           onPress={() =>
                             mainNavigation.navigate('ManageLanguages')
                           }>
-                          <CocoIcon
-                            name="edit-1"
+                          <MaterialCommunityIcons
+                            name="pencil"
                             size={18}
                             color={foreground}
                           />

@@ -348,7 +348,9 @@ export const useLoadAuth = () => {
 
   const loadPricing = useCallback(async () => {
     try {
-      const response = await getPricing({});
+      const response = await getPricing({
+        id: user?.id!,
+      });
       // console.log('loadPricing response:', JSON.stringify(response));
       if (response?.error) {
         const err = response as ErrorData;
@@ -363,7 +365,7 @@ export const useLoadAuth = () => {
       }
       dispatch(
         setPricingData({
-          value: (response as any)?.data?.data,
+          value: (response as any)?.data?.data?.pricing,
         }),
       );
     } catch (error) {

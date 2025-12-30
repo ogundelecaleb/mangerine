@@ -1,88 +1,95 @@
+import { ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
 import Box from './Box';
 import Text from './Text';
+import { useThemeColors } from '@/hooks/useTheme';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import EmptyState from './EmptyState';
-import { MainStack } from '../utils/ParamList';
-import { useAuth } from '../state/hooks/user.hook';
-import { useTheme } from '@shopify/restyle';
-import { Theme } from '../utils/theme';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStack, Work } from '@/utils/ParamList';
+import { usePosts } from '@/state/hooks/posts.hook';
+import WorkItem from './WorkItem';
 
-const ProfileWorksSection = () => {
-  const { works = [] } = useAuth();
-  const theme = useTheme<Theme>();
+interface Props {
+  works?: Work[];
+  name?: string;
+}
+
+const ProfileWorksSection = ({ works, name }: Props) => {
+  const { foreground } = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<MainStack>>();
+  const { userWorks = [] } = usePosts();
 
   return (
-    <Box marginTop="l">
+    <Box>
       <Box
         flexDirection="row"
         alignItems="center"
         justifyContent="space-between">
-        <Box flex={1}>
-          <Text variant="semibold" fontSize={18}>
-            Works
+        <Box>
+          <Text fontSize={16} variant="bold">
+            {works
+              ? `${
+                  name
+                    ? name.split(' ')[0][name.length - 1] === 's'
+                      ? `${name.split(' ')[0]}' `
+                      : `${name.split(' ')[0]}'s `
+                    : ''
+                }Works`
+              : 'My Works'}
           </Text>
         </Box>
-        <Box>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('UserWorks');
-            }}>
-            <MaterialCommunityIcons
-              name="pencil"
-              size={18}
-              color={theme.colors.foreground}
-            />
-          </TouchableOpacity>
-        </Box>
-      </Box>
-      <Box marginTop="m">
-        {works.length > 0 ? (
+        {(works || userWorks)?.length > 0 ? (
           <Box>
-            {works.slice(0, 3).map((work, index) => (
-              <Box key={work.id || index} marginBottom="m">
-                <Box
-                  height={120}
-                  borderRadius={8}
-                  backgroundColor="faded"
-                  overflow="hidden"
-                  justifyContent="center"
-                  alignItems="center">
-                  <Text color="label">Work Item {index + 1}</Text>
-                </Box>
-                <Box marginTop="xs">
-                  <Text variant="semibold" fontSize={14}>
-                    {work.title}
-                  </Text>
-                  <Text fontSize={12} color="label" numberOfLines={2}>
-                    {work.description}
-                  </Text>
-                </Box>
-              </Box>
-            ))}
-            {works.length > 3 && (
-              <Box alignItems="center" marginTop="s">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('UserWorks')}>
-                  <Text fontSize={14} variant="semibold" color="primary">
-                    View all works
-                  </Text>
-                </TouchableOpacity>
-              </Box>
-            )}
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('UserWorks');
+              }}>
+              <Text variant="bold" color="primary">
+                See all
+              </Text>
+            </TouchableOpacity>
           </Box>
+        ) : !works ? (
+          <Box>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('AddWork');
+              }}>
+              <MaterialCommunityIcons
+                name="plus"
+                size={24}
+                color={foreground}
+              />
+            </TouchableOpacity>
+          </Box>
+        ) : null}
+      </Box>
+      <Box>
+        {(works || userWorks)?.length > 0 ? (
+          <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+            <Box
+              flexDirection="row"
+              alignItems="flex-start"
+              gap="m"
+              paddingVertical="m">
+              {(works || userWorks).map(w => (
+                <WorkItem work={w} key={w.id} profile={!works} />
+              ))}
+            </Box>
+          </ScrollView>
         ) : (
           <EmptyState
             subtitle="No works added yet"
-            buttonText="Add Work"
-            doSomething={() => {
-              navigation.navigate('AddWork');
-            }}
+            buttonText={!works ? 'Add work' : undefined}
+            doSomething={
+              !works
+                ? () => {
+                    navigation.navigate('AddWork');
+                  }
+                : undefined
+            }
           />
         )}
       </Box>

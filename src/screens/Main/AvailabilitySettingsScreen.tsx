@@ -1,6 +1,6 @@
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showMessage } from 'react-native-flash-message';
@@ -16,7 +16,7 @@ import { MainStack, ErrorData } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
 import { setAuthTrigger } from '../../state/reducers/user.reducer';
-import { useCreateAvailabilityMutation } from '../../state/services/availability.service';
+import { useCreateAvailabilityMutation, useGetCurrentAvailabilitySettingsMutation } from '../../state/services/availability.service';
 
 const convertTime12to24 = (time12h: string) => {
   const [time, modifier] = time12h.split(' ');
@@ -106,6 +106,7 @@ const AvailabilitySettingsScreen = ({
   const [timezone, setTimezone] = useState('');
   const [preferredDur, setPreferredDur] = useState('60');
   const [createAvailabil, { isLoading }] = useCreateAvailabilityMutation();
+  const [getCurrentSettings, { isLoading: loadingSettings }] = useGetCurrentAvailabilitySettingsMutation();
   const dispatch = useDispatch();
   const [timeSlots, setTimeSlots] = useState<
     {
@@ -115,6 +116,26 @@ const AvailabilitySettingsScreen = ({
       duration: string[];
     }[]
   >([]);
+
+  const loadCurrentSettings = useCallback(async () => {
+    try {
+      const response = await getCurrentSettings({});
+      if (response?.data?.data) {
+        const { timezone: tz, availability } = response.data.data;
+        setTimezone(tz || 'gmt');
+        setTimeSlots(availability || []);
+        if (availability?.[0]?.duration?.[0]) {
+          setPreferredDur(availability[0].duration[0]);
+        }
+      }
+    } catch (error) {
+      console.log('Error loading current settings:', error);
+    }
+  }, [getCurrentSettings]);
+
+  useEffect(() => {
+    loadCurrentSettings();
+  }, [loadCurrentSettings]);
 
   const sortedDates = useMemo(
     () =>
@@ -347,6 +368,13 @@ const AvailabilitySettingsScreen = ({
             <Box flex={1}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Box paddingVertical="m" paddingHorizontal="l">
+                  {loadingSettings && (
+                    <Box alignItems="center" marginBottom="m">
+                      <Text fontSize={12} textAlign="center">
+                        Loading current availability settings...
+                      </Text>
+                    </Box>
+                  )}
                   <Box marginBottom="l">
                     <Text textAlign="center" color="label">
                       Please update your availability for consultation

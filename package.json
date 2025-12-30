@@ -41,6 +41,7 @@
     "react-native": "0.79.6",
     "react-native-actions-sheet": "^10.1.1",
     "react-native-calendars": "^1.1313.0",
+    "react-native-date-picker": "^5.0.13",
     "react-native-flash-message": "^0.4.2",
     "react-native-image-picker": "^8.2.1",
     "react-native-material-menu": "^2.0.0",

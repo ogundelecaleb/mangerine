@@ -60,7 +60,7 @@ const MyConsultationScreen = ({
               </Box>
               <Box padding="s" opacity={0} width={32}></Box>
             </Box>
-            <Box flex={1}>
+            <Box flex={1} paddingHorizontal='l'>
               <Box
                 flexDirection="row"
                 alignItems="center"

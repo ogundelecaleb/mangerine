@@ -80,6 +80,12 @@ export const availabilityApi = createApi({
         method: 'DELETE',
       }),
     }),
+    getCurrentAvailabilitySettings: builder.mutation({
+      query: () => ({
+        url: '/current/settings',
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -89,4 +95,5 @@ export const {
   useGetAvailabilityMutation,
   useGetConsultantAvailabilityMutation,
   useUpdateAvailabilityMutation,
+  useGetCurrentAvailabilitySettingsMutation,
 } = availabilityApi; 

@@ -15,6 +15,7 @@ import Box from '../../components/Box';
 import Text from '../../components/Text';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
 import ConsultationItem from '../../components/ConsultationItem';
+import EmptyState from '../../components/EmptyState';
 import { MainStack, Appointment, ErrorData } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
@@ -39,7 +40,7 @@ const ScheduledConsultationScreen = ({
           status: 'UPCOMING',
         },
       });
-      
+
       if (response?.error) {
         const err = response as ErrorData;
         showMessage({
@@ -147,6 +148,11 @@ const ScheduledConsultationScreen = ({
                     }}
                   />
                 )}
+                ListEmptyComponent={
+                  !isLoading ? (
+                    <EmptyState subtitle="No scheduled consultations yet" />
+                  ) : null
+                }
                 onEndReachedThreshold={0.3}
                 onEndReached={() => {
                   if (!isLoading && page < totalPages) {

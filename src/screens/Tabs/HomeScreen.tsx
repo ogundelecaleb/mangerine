@@ -74,7 +74,7 @@ const HomeScreen = ({}: Props) => {
         },
       });
       
-      console.log('response', JSON.stringify(response));
+      // console.log('response', JSON.stringify(response));
       if ((response as any)?.error) {
         return;
       }
@@ -89,7 +89,7 @@ const HomeScreen = ({}: Props) => {
         ]);
       }
     } catch (error) {
-      console.log('paginated posts error', JSON.stringify(error));
+      // console.log('paginated posts error', JSON.stringify(error));
     }
   }, [getPosts, page]);
 

@@ -5,7 +5,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { showMessage } from 'react-native-flash-message';
 import { useDispatch } from 'react-redux';
-
 import Box from '../../components/Box';
 import Text from '../../components/Text';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
@@ -14,7 +13,10 @@ import Input from '../../components/Input';
 import { MainStack, ErrorData } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
-import { setAuthTrigger, setPricingData } from '../../state/reducers/user.reducer';
+import {
+  setAuthTrigger,
+  setPricingData,
+} from '../../state/reducers/user.reducer';
 import { useUpdatePricingMutation } from '../../state/services/consultants.service';
 import { useAuth } from '../../state/hooks/user.hook';
 
@@ -25,13 +27,16 @@ const PricingScreen = ({
   const dispatch = useDispatch();
   const [updatePricing, { isLoading }] = useUpdatePricingMutation();
   const { pricingData } = useAuth();
+const pricingInfo = pricingData?.pricing || {}
+
+  console.log('pricingData', pricingData);
 
   const postPricing = useCallback(async () => {
     try {
       const response = await updatePricing({
         body: pricingData,
       });
-      
+
       if (response?.error) {
         const err = response as ErrorData;
         showMessage({
@@ -161,7 +166,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.dayBookPercentage.toString()}
+                          value={pricingData?.dayBookPercentage?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({
@@ -190,7 +195,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.midDayBookPercentage.toString()}
+                          value={pricingData?.midDayBookPercentage?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({
@@ -233,7 +238,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.twoHoursDiscount.toString()}
+                          value={pricingData?.twoHoursDiscount?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({
@@ -262,7 +267,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.threeHoursDiscount.toString()}
+                          value={pricingData?.threeHoursDiscount?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({
@@ -291,7 +296,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.fourHoursDiscount.toString()}
+                          value={pricingData?.fourHoursDiscount?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({
@@ -319,7 +324,7 @@ const PricingScreen = ({
                               <Text fontSize={20}>%</Text>
                             </Box>
                           }
-                          value={pricingData.otherHoursDiscount.toString()}
+                          value={pricingData?.otherHoursDiscount?.toString()}
                           onChangeText={v => {
                             dispatch(
                               setPricingData({

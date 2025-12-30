@@ -27,6 +27,8 @@ import {
 import { useAuth } from '@/state/hooks/user.hook';
 import { useLoadAuth } from '@/state/hooks/loadauth.hook';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal';
+import { useDispatch } from 'react-redux';
+import { setAuthTrigger } from '@/state/reducers/user.reducer';
 
 const ManageSkillsScreen = ({
   navigation,
@@ -34,6 +36,7 @@ const ManageSkillsScreen = ({
   const { skills = [] } = useAuth();
   const { foreground, danger, foreground_primary } = useThemeColors();
   const { loadUserSkills, skillsLoading } = useLoadAuth();
+  const dispatch = useDispatch();
   const [createSkill, { isLoading: createLoading }] = useAddSkillMutation();
   const [deleteSkill, { isLoading: deleteLoading }] = useDeleteSkillMutation();
   const [selectedDeleteId, setSelectedDeleteId] = useState('');
@@ -80,12 +83,17 @@ const ManageSkillsScreen = ({
           message: 'You have added a new skill',
           type: 'success',
         });
+        dispatch(
+          setAuthTrigger({
+            trigger: true,
+          }),
+        );
         loadUserSkills();
       } catch (error) {
         console.log('wwork error:', error);
       }
     },
-    [skillsToAdd, newTitle, createSkill, loadUserSkills],
+    [skillsToAdd, newTitle, createSkill, loadUserSkills, dispatch],
   );
 
   const removeSkill = useCallback(async () => {
@@ -117,11 +125,16 @@ const ManageSkillsScreen = ({
         message: 'You have removed a skill',
         type: 'success',
       });
+      dispatch(
+        setAuthTrigger({
+          trigger: true,
+        }),
+      );
       loadUserSkills();
     } catch (error) {
       console.log('wwork error:', error);
     }
-  }, [selectedDeleteId, deleteSkill, loadUserSkills]);
+  }, [selectedDeleteId, deleteSkill, loadUserSkills, dispatch]);
 
   return (
     <BaseScreenComponent>

@@ -140,12 +140,15 @@ const BookConsultationScreen = ({
 
   const loadConsultancy = useCallback(async () => {
     try {
+      const params = {
+        userId: route?.params?.consultant?.id!,
+        startDate: moment(activeMonth).startOf('month').format('YYYY/MM/DD'),
+        endDate: moment(activeMonth).endOf('month').format('YYYY/MM/DD'),
+      };
+      console.log('Getting availability with params:', params);
+      
       const response = await getAvailability({
-        params: {
-          userId: route?.params?.consultant?.id!,
-          startDate: moment(activeMonth).startOf('month').format('YYYY/MM/DD'),
-          endDate: moment(activeMonth).endOf('month').format('YYYY/MM/DD'),
-        },
+        params,
       });
       
       if (response?.error) {
@@ -159,6 +162,7 @@ const BookConsultationScreen = ({
         });
         return;
       }
+      console.log('Availability response:', response);
       setAvailability((response as any)?.data?.data || []);
     } catch (error) {
       console.log('get availability error', JSON.stringify(error));

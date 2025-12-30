@@ -1,4 +1,4 @@
-import { Animated, ScrollView, TouchableOpacity } from 'react-native';
+import { Animated, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -120,7 +120,7 @@ const MyBusinessScreen = ({
             <Box flex={1} paddingTop="l">
               <ScrollView showsVerticalScrollIndicator={false}>
                 {items.map(i => (
-                  <Box key={i.title}>
+                  <View style={{paddingHorizontal: 24}} key={i.title}>
                     <TouchableOpacity
                       onPress={() => {
                         if (i.subLinks.length) {
@@ -134,13 +134,13 @@ const MyBusinessScreen = ({
                         }
                       }}>
                       <Box
-                        paddingHorizontal="l"
+                        paddingHorizontal="m"
                         flexDirection="row"
                         alignItems="center"
                         gap="m"
                         paddingVertical="m"
                         borderBottomWidth={1}
-                        borderBottomColor="border">
+                        borderBottomColor="searchbg">
                         <Box
                           height={40}
                           width={40}
@@ -201,7 +201,7 @@ const MyBusinessScreen = ({
                         </Box>
                       </Animated.View>
                     </Box>
-                  </Box>
+                  </View>
                 ))}
               </ScrollView>
             </Box>

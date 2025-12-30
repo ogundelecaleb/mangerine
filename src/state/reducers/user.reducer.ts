@@ -1,10 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import { User } from '../../utils/ParamList';
-
+import {
+  Consultancy,
+  Education,
+  Experience,
+  Interest,
+  Language,
+  Skill,
+  User,
+  UserType,
+} from '@/utils/types';
 
 export const examplePricingData = {
-  currency: 'USD',
   flatPrice: '0',
   dayBookPercentage: 0,
   midDayBookPercentage: 0,
@@ -20,14 +27,14 @@ type AuthState = {
   tokenExpiration?: string;
   authBlocked?: boolean;
   authTrigger?: boolean;
-  interests: any[];
-  userTypes: any[];
-  skills?: any[];
-  education?: any[];
-  experience?: any[];
-  languages?: any[];
+  interests: Interest[];
+  userTypes: UserType[];
+  skills?: Skill[];
+  education?: Education[];
+  experience?: Experience[];
+  languages?: Language[];
   followers?: User[];
-  services?: any[];
+  services?: Consultancy[];
   follows?: User[];
   followerCount?: number;
   followsCount?: number;
@@ -38,6 +45,7 @@ const slice = createSlice({
   name: 'user',
   initialState: {
     user: null,
+    token: undefined,
     authTrigger: false,
     authBlocked: false,
     userTypes: [],
@@ -201,7 +209,7 @@ export const {
 
 export default slice.reducer;
 
-export const selectCurrentUser = (state: RootState) => state.auth.user;
-export const selectAuthValues = (state: RootState) => state.auth;
-// export const selectAuthTrigger = (state: RootState) => state.auth.authTrigger;
-// export const selectAuthBlocked = (state: RootState) => state.auth.authBlocked;
+export const selectCurrentUser = (state: RootState) => (state.user as AuthState)?.user;
+export const selectAuthValues = (state: RootState) => state.user as AuthState;
+export const selectAuthTrigger = (state: RootState) => (state.user as AuthState)?.authTrigger;
+export const selectAuthBlocked = (state: RootState) => (state.user as AuthState)?.authBlocked;

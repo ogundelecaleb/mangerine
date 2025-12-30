@@ -9,8 +9,8 @@ export const postsApi = createApi({
     baseUrl: `${getUrl()}/posts`,
     prepareHeaders: async (headers, { getState }) => {
       // By default, if we have a token in the store, let's use that for authenticated requests
-      const state = getState() as any;
-      const token = state.auth?.token;
+      const state = getState() as RootState;
+      const token = state?.user?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
         // headers.set('Authentication', `Bearer ${token}`);

@@ -81,7 +81,7 @@ const ProfileScreen = ({
     'skills' | 'education' | 'experience' | 'languages'
   >();
   const [viewAll, setViewAll] = useState(false);
-console.log("user", user)
+
 
   const updatePic = useCallback(
     async (

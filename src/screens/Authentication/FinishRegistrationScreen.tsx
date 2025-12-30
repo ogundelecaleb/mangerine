@@ -26,7 +26,7 @@ import Select from '../../components/Select';
 import CheckBox from '../../components/Checkbox';
 import { useCreateAccountMutation } from '../../state/services/auth.service';
 import { useAppDispatch } from '../../state/hooks/redux';
-import { setCredentials } from '../../state/reducers/authSlice';
+import { setCredentials } from '../../state/reducers/user.reducer';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
 

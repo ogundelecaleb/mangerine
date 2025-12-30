@@ -1,7 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
+import { PersistPartial } from 'redux-persist/es/persistReducer';
+
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { combineReducers } from '@reduxjs/toolkit';
+import { combineReducers } from 'redux';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 // Import API services
@@ -12,35 +15,31 @@ import { consultantsApi } from './services/consultants.service';
 import { appointmentApi } from './services/appointment.service';
 import { availabilityApi } from './services/availability.service';
 import { workApi } from './services/work.service';
+import { educationApi } from './services/education.service copy';
+import { experienceApi } from './services/experience.service';
 
 // Import reducers
-import authReducer from './reducers/authSlice';
-import postsReducer from './reducers/posts.reducer';
-import userReducer from './reducers/user.reducer';
-import usersettingsReducer from './reducers/usersettings.reducer';
-import settingReducer from './reducers/setting.reducer';
-import groupsReducer from './reducers/groups.reducer';
-import chatReducer from './reducers/chat.reducer';
+import user from './reducers/user.reducer';
+import usersettings from './reducers/usersettings.reducer';
+import setting from './reducers/setting.reducer';
+import posts from './reducers/posts.reducer';
+import groups from './reducers/groups.reducer';
+import chat from './reducers/chat.reducer';
 
-// Persist configuration
 const persistConfig = {
   key: 'root',
+  version: 1,
   storage: AsyncStorage,
-  whitelist: ['auth', 'user', 'usersettings', 'chat'], // Persist these reducers
-  blacklist: [
-    authApi.reducerPath, 
-    usersApi.reducerPath, 
-    postsApi.reducerPath, 
-    consultantsApi.reducerPath,
-    appointmentApi.reducerPath,
-    availabilityApi.reducerPath,
-    workApi.reducerPath
-  ], // Don't persist API cache
+  whitelist: ['user', 'usersettings', 'chat'],
 };
 
-// Root reducer combining all slices
-const rootReducer = combineReducers({
-  // API services
+const reducers = combineReducers({
+  user,
+  usersettings,
+  posts,
+  groups,
+  setting,
+  chat,
   [authApi.reducerPath]: authApi.reducer,
   [usersApi.reducerPath]: usersApi.reducer,
   [postsApi.reducerPath]: postsApi.reducer,
@@ -48,28 +47,17 @@ const rootReducer = combineReducers({
   [appointmentApi.reducerPath]: appointmentApi.reducer,
   [availabilityApi.reducerPath]: availabilityApi.reducer,
   [workApi.reducerPath]: workApi.reducer,
-  
-  // App state slices
-  auth: authReducer,
-  user: userReducer,
-  usersettings: usersettingsReducer,
-  posts: postsReducer,
-  groups: groupsReducer,
-  setting: settingReducer,
-  chat: chatReducer,
+  [educationApi.reducerPath]: educationApi.reducer,
+  [experienceApi.reducerPath]: experienceApi.reducer,
 });
 
-// Persisted reducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, reducers);
 
-// Configure store
 export const store = configureStore({
   reducer: persistedReducer,
-  middleware: (getDefaultMiddleware) =>
+  middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-      },
+      serializableCheck: false,
     }).concat([
       authApi.middleware,
       usersApi.middleware,
@@ -78,16 +66,14 @@ export const store = configureStore({
       appointmentApi.middleware,
       availabilityApi.middleware,
       workApi.middleware,
+      educationApi.middleware,
+      experienceApi.middleware,
     ]),
-  devTools: __DEV__,
 });
 
-// Persistor for Redux Persist
 export const persistor = persistStore(store);
 
-// Types for TypeScript
-export type RootState = ReturnType<typeof store.getState>;
+export type Root = ReturnType<typeof store.getState>;
+export type RootState = Root & PersistPartial;
 export type AppDispatch = typeof store.dispatch;
-
-// Setup listeners for RTK Query
 setupListeners(store.dispatch);

@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_BASE_URL } from '../config';
+import { RootState } from '../store';
 
 // Create your service using a base URL and expected endpoints
 export const availabilityApi = createApi({
@@ -8,7 +9,8 @@ export const availabilityApi = createApi({
     baseUrl: `${API_BASE_URL}/availability`,
     prepareHeaders: async (headers, { getState }) => {
       // By default, if we have a token in the store, let's use that for authenticated requests
-      const token = (getState() as any).auth.token;
+      const state = getState() as RootState;
+      const token = state?.user?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
         // headers.set('Authentication', `Bearer ${token}`);

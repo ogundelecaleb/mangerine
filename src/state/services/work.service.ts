@@ -1,56 +1,78 @@
+import { getUrl } from '@/utils/helpers';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getUrl } from '../../utils/helpers';
+import { RootState } from '../store';
 
+// Create your service using a base URL and expected endpoints
 export const workApi = createApi({
   reducerPath: 'workApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${getUrl()}/works`,
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth.token;
+    baseUrl: `${getUrl()}/work`,
+    prepareHeaders: async (headers, { getState }) => {
+      // By default, if we have a token in the store, let's use that for authenticated requests
+       const state = getState() as RootState;
+      const token = state?.user?.token;
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
+        // headers.set('Authentication', `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['Work'],
-  endpoints: (builder) => ({
-    getWorks: builder.mutation<any, string>({
-      query: (userId) => ({
-        url: `/${userId}`,
+  endpoints: builder => ({
+    getWorks: builder.mutation({
+      query: () => ({
+        url: '/get',
         method: 'GET',
       }),
-      invalidatesTags: ['Work'],
     }),
-    addWork: builder.mutation<any, any>({
-      query: (body) => ({
-        url: '',
+    getWork: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/' + id,
+        method: 'GET',
+      }),
+    }),
+    deleteWork: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/' + id,
+        method: 'DELETE',
+      }),
+    }),
+    createWork: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
+        url: '/create',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Work'],
     }),
-    updateWork: builder.mutation<any, { id: string; body: any }>({
-      query: ({ id, body }) => ({
-        url: `/${id}`,
-        method: 'PUT',
+    updateWork: builder.mutation({
+      query: ({ body, id }: { body: FormData; id: string }) => ({
+        url: '/edit/' + id,
+        method: 'PATCH',
         body,
       }),
-      invalidatesTags: ['Work'],
     }),
-    deleteWork: builder.mutation<any, string>({
-      query: (id) => ({
-        url: `/${id}`,
-        method: 'DELETE',
+    addWorkPost: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          post: number;
+          work: string;
+        };
+      }) => ({
+        url: '/add/post',
+        method: 'POST',
+        body,
       }),
-      invalidatesTags: ['Work'],
     }),
   }),
 });
 
 export const {
-  useGetWorksMutation,
-  useAddWorkMutation,
-  useUpdateWorkMutation,
+  useAddWorkPostMutation,
+  useCreateWorkMutation,
   useDeleteWorkMutation,
+  useGetWorkMutation,
+  useGetWorksMutation,
+  useUpdateWorkMutation,
 } = workApi;

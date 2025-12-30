@@ -8,8 +8,8 @@ export const authApi = createApi({
     baseUrl: `${getUrl()}/auth`,
     prepareHeaders: async (headers, { getState }) => {
       console.log('API Base URL:', `${getUrl()}/auth`);
-      const state = getState() as any;
-      const token = state.auth?.token;
+      const state = getState() as RootState;
+      const token = state?.user?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -24,8 +24,8 @@ export const authApi = createApi({
         body,
       }),
     }),
-    preSignup: builder.mutation<any, { email: string }>({
-      query: body => ({
+    preSignup: builder.mutation({
+      query: ({ body }: { body: { email: string } }) => ({
         url: '/pre/signup',
         method: 'POST',
         body,

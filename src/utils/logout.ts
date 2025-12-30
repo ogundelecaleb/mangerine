@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { store, persistor } from '../state/store';
-import { logout } from '../state/reducers/authSlice';
+import { signUserOut } from '../state/reducers/user.reducer';
 
 export const logoutUser = async () => {
   // Dispatch logout action
-  store.dispatch(logout());
+  store.dispatch(signUserOut());
   
   // Clear AsyncStorage
   await AsyncStorage.clear();

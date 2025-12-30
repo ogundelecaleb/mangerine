@@ -31,7 +31,7 @@ const ProfileWorksSection = () => {
         <Box>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('AddWork');
+              navigation.navigate('UserWorks');
             }}>
             <MaterialCommunityIcons
               name="pencil"

@@ -1,41 +1,47 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from '@shopify/restyle';
 import Box from './Box';
-import { Theme } from '../utils/theme';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useThemeColors } from '@/hooks/useTheme';
 
-interface CheckBoxProps {
-  checked: boolean;
-  onPress: () => void;
+interface Props {
+  color?: string;
+  checkColor?: string;
   size?: number;
-  disabled?: boolean;
+  onPress?: () => void;
+  checked?: boolean;
 }
 
-const CheckBox = ({ checked, onPress, size = 20, disabled = false }: CheckBoxProps) => {
-  const theme = useTheme<Theme>();
+const CheckBox = ({ checked, onPress, size, color, checkColor }: Props) => {
+  const { foreground_primary, background } = useThemeColors();
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={disabled}>
-      <Box
-        width={size}
-        height={size}
-        borderRadius={4}
-        borderWidth={2}
-        borderColor={checked ? 'primary' : 'border'}
-        backgroundColor={checked ? 'primary' : 'background'}
-        justifyContent="center"
-        alignItems="center"
-        opacity={disabled ? 0.5 : 1}>
-        {checked && (
-          <MaterialCommunityIcons
-            name="check"
-            size={size * 0.7}
-            color="white"
-          />
-        )}
-      </Box>
-    </TouchableOpacity>
+    <Box>
+      <TouchableOpacity
+        activeOpacity={0.91}
+        testID="checkbox"
+        onPress={onPress}>
+        <Box
+          borderRadius={5}
+          borderWidth={1}
+          justifyContent="center"
+          alignItems="center"
+          style={{
+            borderColor: color || foreground_primary,
+            backgroundColor: checked ? color || foreground_primary : undefined,
+            width: size,
+            height: size,
+          }}>
+          {checked && (
+            <Ionicons
+              name={'checkmark'}
+              size={(size || 14) - 6}
+              color={checked ? checkColor || background : foreground_primary}
+            />
+          )}
+        </Box>
+      </TouchableOpacity>
+    </Box>
   );
 };
 

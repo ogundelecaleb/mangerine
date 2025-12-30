@@ -106,22 +106,12 @@ export const useLoadPosts = () => {
     }
   }, [dispatch, getPosts, token]);
 
-  return useMemo(
-    () => ({
-      loadPosts: fetchAllPosts,
-      allpostsLoading,
-      loadUserPosts,
-      userpostsLoading,
-      loadUserWorks,
-      userWorksLoading,
-    }),
-    [
-      fetchAllPosts,
-      allpostsLoading,
-      loadUserPosts,
-      userpostsLoading,
-      loadUserWorks,
-      userWorksLoading,
-    ],
-  );
+  return {
+    loadPosts: fetchAllPosts,
+    allpostsLoading,
+    loadUserPosts,
+    userpostsLoading,
+    loadUserWorks,
+    userWorksLoading,
+  };
 };

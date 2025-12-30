@@ -1,6 +1,10 @@
-import React from 'react';
+import { createIconSetFromIcoMoon } from 'react-native-vector-icons';
+import icoMoonConfig from './selection.json';
 
-// Empty component to prevent import errors
-const CocoIcon = () => null;
+const CocoIcon = createIconSetFromIcoMoon(
+  icoMoonConfig,
+  'CocoIcon',
+  'CocoIcon.ttf'
+);
 
 export default CocoIcon;

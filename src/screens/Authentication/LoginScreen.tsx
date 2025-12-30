@@ -16,7 +16,7 @@ import Checkbox from '../../components/Checkbox';
 import { loginSchema } from '../../utils/validation';
 import { useLoginMutation } from '../../state/services/auth.service';
 import { useAppDispatch } from '../../state/hooks/redux';
-import { setCredentials } from '../../state/reducers/authSlice';
+import { setCredentials } from '../../state/reducers/user.reducer';
 import { setAuthBlocked } from '@/state/reducers/user.reducer';
 import MLogo from '../../assets/svgs/MLogo';
 import EnvelopeSVG from '../../assets/svgs/EnvelopeSVG';

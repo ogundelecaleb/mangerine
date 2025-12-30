@@ -3,15 +3,14 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
 
 // Create your service using a base URL and expected endpoints
-export const experienceApi = createApi({
-  reducerPath: 'experienceApi',
+export const educationApi = createApi({
+  reducerPath: 'EducationApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${getUrl()}/experience`,
+    baseUrl: `${getUrl()}/education`,
     prepareHeaders: async (headers, { getState }) => {
       // By default, if we have a token in the store, let's use that for authenticated requests
       const state = getState() as RootState;
-      const token = state?.user?.token;
-      if (token) {
+      const token = state?.user?.token;      if (token) {
         headers.set('Authorization', `Bearer ${token}`);
         // headers.set('Authentication', `Bearer ${token}`);
       }
@@ -19,33 +18,32 @@ export const experienceApi = createApi({
     },
   }),
   endpoints: builder => ({
-    getExperiences: builder.mutation({
+    getEducations: builder.mutation({
       query: () => ({
         url: '/get',
         method: 'GET',
       }),
     }),
-    getExperience: builder.mutation({
+    getEducation: builder.mutation({
       query: ({ id }: { id: string }) => ({
         url: '/' + id,
         method: 'GET',
       }),
     }),
-    deleteExperience: builder.mutation({
+    deleteEducation: builder.mutation({
       query: ({ id }: { id: string }) => ({
         url: '/' + id,
         method: 'DELETE',
       }),
     }),
-    createExperience: builder.mutation({
+    createEducation: builder.mutation({
       query: ({
         body,
       }: {
         body: {
-          title: string;
-          employment_type: string;
-          company_name: string;
-          location: string;
+          school_name: string;
+          degree: string;
+          field_of_study: string;
           start_month: string;
           end_month: string;
           end_year: string;
@@ -58,16 +56,15 @@ export const experienceApi = createApi({
         body,
       }),
     }),
-    updateExperience: builder.mutation({
+    updateEducation: builder.mutation({
       query: ({
         body,
         id,
       }: {
         body: {
-          title: string;
-          employment_type: string;
-          company_name: string;
-          location: string;
+          school_name: string;
+          degree: string;
+          field_of_study: string;
           start_month: string;
           end_month: string;
           end_year: string;
@@ -77,7 +74,7 @@ export const experienceApi = createApi({
         id: string;
       }) => ({
         url: '/' + id,
-        method: 'POST',
+        method: 'PATCH',
         body,
       }),
     }),
@@ -85,9 +82,9 @@ export const experienceApi = createApi({
 });
 
 export const {
-  useCreateExperienceMutation,
-  useDeleteExperienceMutation,
-  useGetExperienceMutation,
-  useGetExperiencesMutation,
-  useUpdateExperienceMutation,
-} = experienceApi;
+  useCreateEducationMutation,
+  useDeleteEducationMutation,
+  useGetEducationMutation,
+  useGetEducationsMutation,
+  useUpdateEducationMutation,
+} = educationApi;

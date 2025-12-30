@@ -8,8 +8,9 @@ export const consultantsApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/consultants`,
     prepareHeaders: (headers, { getState }) => {
- const state = getState() as any;
-      const token = state.auth?.token;      if (token) {
+      const state = getState() as RootState;
+      const token = state.user?.token;
+      if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;

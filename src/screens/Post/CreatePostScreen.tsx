@@ -28,7 +28,7 @@ type Props = NativeStackScreenProps<MainStack, 'CreatePost'>;
 
 const CreatePostScreen = ({ navigation, route }: Props) => {
   const theme = useTheme<Theme>();
-  const user = useAppSelector(state => state.auth.user);
+  const user = useAppSelector(state => state.user?.user);
   const [create, { isLoading }] = useCreatePostMutation();
   const [edit, { isLoading: editLoading }] = useEditPostMutation();
   const [images, setImages] = useState<any[]>([]);

@@ -263,13 +263,14 @@ const AvailabilitySettingsScreen = ({
 
   const newAvailability = useCallback(async () => {
     try {
-      console.log('timeSlots:', timeSlots);
-      console.log('preparedDates:', preparedDates);
-      console.log('preparedDates.length:', preparedDates.length);
-
       const avObj = {
         timezone,
-        availability_settings: [],
+        availability_settings: timeSlots.map(slot => ({
+          day: slot.day,
+          enabled: slot.enabled,
+          slots: slot.slots,
+          duration: slot.duration
+        })),
         availabilities: preparedDates,
       };
 
@@ -306,7 +307,6 @@ const AvailabilitySettingsScreen = ({
         }),
       );
     } catch (error) {
-      console.log('availability error:', error);
     }
   }, [createAvailabil, dispatch, preparedDates, timezone]);
 

@@ -1,196 +1,255 @@
+import { getUrl } from '@/utils/helpers';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { getUrl } from '../../utils/helpers';
 import { RootState } from '../store';
 
-
-
+// Create your service using a base URL and expected endpoints
 export const usersApi = createApi({
-  reducerPath: 'usersApi',
+  reducerPath: 'UsersApi',
   baseQuery: fetchBaseQuery({
     baseUrl: `${getUrl()}/users`,
     prepareHeaders: async (headers, { getState }) => {
-      const state = getState() as any;
-      const token = state.auth?.token;
+      // By default, if we have a token in the store, let's use that for authenticated requests
+      const state = getState() as RootState;
+      const token = state?.user?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['User', 'Profile'],
-  endpoints: (builder) => ({
-    getInfo: builder.query<any, void>({
-      query: () => '/get/info',
-      providesTags: ['Profile'],
-    }),
-    getUserInfo: builder.query<any, { id: string }>({
-      query: ({ id }) => ({
+  endpoints: builder => ({
+    getInfo: builder.mutation({
+      query: () => ({
         url: '/get/info',
-        params: { id },
+        method: 'GET',
       }),
-      providesTags: ['User'],
     }),
-    updateProfilePic: builder.mutation<any, FormData>({
-      query: (body) => ({
+    getUserInfo: builder.mutation({
+      query: ({ id }: { id: string }) => {
+        return {
+          url: '/get/info/',
+          method: 'GET',
+          params: {
+            id,
+          },
+        };
+      },
+    }),
+    updateProfilePic: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
         url: '/update/profile/pics',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    updateProfileBanner: builder.mutation<any, FormData>({
-      query: (body) => ({
+    updateProfileBanner: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
         url: '/update/profile/banner',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    updateProfileVideo: builder.mutation<any, FormData>({
-      query: (body) => ({
+    updateProfileVideo: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
         url: '/update/profile/video',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    updateProfileInfo: builder.mutation<any, {
-      fullName: string;
-      occupation: string;
-      location: string;
-      dateOfBirth: string;
-      bio: string;
-    }>({
-      query: (body) => ({
-        url: '/update/profile/info',
-        method: 'POST',
+    updateProfileContact: builder.mutation({
+      query: ({
         body,
-      }),
-      invalidatesTags: ['Profile'],
-    }),
-    updateProfileContact: builder.mutation<any, {
-      mobileNumber: string;
-      websiteAddress: string;
-    }>({
-      query: (body) => ({
+      }: {
+        body: {
+          mobileNumber: string;
+          websiteAddress: string;
+        };
+      }) => ({
         url: '/update/contact/info',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    deleteSkill: builder.mutation<any, { id: string }>({
-      query: ({ id }) => ({
-        url: `/delete/skill/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Profile'],
-    }),
-    addLanguage: builder.mutation<any, {
-      language: string;
-      proficiency: string;
-    }>({
-      query: (body) => ({
-        url: '/add/language',
+    updateProfileInfo: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          fullName: string;
+          occupation: string;
+          location: string;
+          dateOfBirth: string;
+          bio: string;
+        };
+      }) => ({
+        url: '/update/profile/info',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    deleteLanguage: builder.mutation<any, { id: string }>({
-      query: ({ id }) => ({
-        url: `/delete/language/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Profile'],
-    }),
-    followUser: builder.mutation<any, {
-      currentUser: string;
-      targetUser: string;
-    }>({
-      query: ({ currentUser, targetUser }) => ({
-        url: `${currentUser}/follow/${targetUser}`,
-        method: 'POST',
-      }),
-      invalidatesTags: ['User', 'Profile'],
-    }),
-    unfollowUser: builder.mutation<any, {
-      currentUser: string;
-      targetUser: string;
-    }>({
-      query: ({ currentUser, targetUser }) => ({
-        url: `${currentUser}/unfollow/${targetUser}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['User', 'Profile'],
-    }),
-    getFollowers: builder.query<any, {
-      id: string;
-      page: number;
-      limit: number;
-    }>({
-      query: ({ id, page, limit }) => ({
-        url: `/${id}/followers`,
-        params: { page, limit },
-      }),
-    }),
-    getFollowing: builder.query<any, {
-      id: string;
-      page: number;
-      limit: number;
-    }>({
-      query: ({ id, page, limit }) => ({
-        url: `/${id}/following`,
-        params: { page, limit },
-      }),
-    }),
-    addConsultancy: builder.mutation<any, FormData>({
-      query: (body) => ({
+    addConsultancy: builder.mutation({
+      query: ({ body }: { body: FormData }) => ({
         url: '/add/consultancy',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Profile'],
     }),
-    getConsultancy: builder.query<any, void>({
-      query: () => '/get/consultancy',
-      providesTags: ['Profile'],
+    getConsultancy: builder.mutation({
+      query: () => ({
+        url: '/get/consultancy',
+        method: 'GET',
+      }),
     }),
-    deleteConsultancy: builder.mutation<any, { id: string }>({
-      query: ({ id }) => ({
-        url: `/delete/consultancy/${id}`,
+    deleteConsultancy: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/delete/consultancy/' + id,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Profile'],
     }),
-    becomeConsultant: builder.mutation<any, void>({
+    deleteLanguage: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/delete/language/' + id,
+        method: 'DELETE',
+      }),
+    }),
+    deleteSkill: builder.mutation({
+      query: ({ id }: { id: string }) => ({
+        url: '/delete/skill/' + id,
+        method: 'DELETE',
+      }),
+    }),
+    addLanguage: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          language: string;
+          proficiency: string;
+        };
+      }) => ({
+        url: '/add/language',
+        method: 'POST',
+        body,
+      }),
+    }),
+    addSkill: builder.mutation({
+      query: ({ body }: { body: { name: string; skills: string[] } }) => ({
+        url: '/add/skill',
+        method: 'POST',
+        body,
+      }),
+    }),
+    getLanguages: builder.mutation({
+      query: () => ({
+        url: '/get/languages',
+        method: 'GET',
+      }),
+    }),
+    getSkills: builder.mutation({
+      query: () => ({
+        url: '/get/skills',
+        method: 'GET',
+      }),
+    }),
+    followUser: builder.mutation({
+      query: ({
+        currentUser,
+        targetUser,
+      }: {
+        currentUser: string;
+        targetUser: string;
+      }) => ({
+        url: `${currentUser}/follow/${targetUser}`,
+        method: 'POST',
+      }),
+    }),
+    unfollowUser: builder.mutation({
+      query: ({
+        currentUser,
+        targetUser,
+      }: {
+        currentUser: string;
+        targetUser: string;
+      }) => ({
+        url: `${currentUser}/unfollow/${targetUser}`,
+        method: 'DELETE',
+      }),
+    }),
+    deactivate: builder.mutation({
+      query: ({
+        body,
+      }: {
+        body: {
+          reason: string;
+        };
+      }) => ({
+        url: '/deactivate',
+        method: 'PATCH',
+        body,
+      }),
+    }),
+    becomeConsultant: builder.mutation({
       query: () => ({
         url: '/become/consultant',
         method: 'PATCH',
       }),
-      invalidatesTags: ['Profile'],
+    }),
+    getFollowing: builder.mutation({
+      query: ({
+        id,
+        params,
+      }: {
+        id: string;
+        params: {
+          page: number;
+          limit: number;
+        };
+      }) => ({
+        url: '/' + id + '/following',
+        method: 'GET',
+        params,
+      }),
+    }),
+    getFollowers: builder.mutation({
+      query: ({
+        id,
+        params,
+      }: {
+        id: string;
+        params: {
+          page: number;
+          limit: number;
+        };
+      }) => ({
+        url: '/' + id + '/followers',
+        method: 'GET',
+        params,
+      }),
     }),
   }),
 });
 
 export const {
-  useGetInfoQuery,
-  useGetUserInfoQuery,
-  useUpdateProfilePicMutation,
+  useGetInfoMutation,
   useUpdateProfileBannerMutation,
-  useUpdateProfileVideoMutation,
   useUpdateProfileInfoMutation,
-  useUpdateProfileContactMutation,
-  useAddSkillMutation,
-  useDeleteSkillMutation,
-  useAddLanguageMutation,
-  useDeleteLanguageMutation,
-  useFollowUserMutation,
-  useUnfollowUserMutation,
-  useGetFollowersQuery,
-  useGetFollowingQuery,
+  useUpdateProfilePicMutation,
+  useUpdateProfileVideoMutation,
   useAddConsultancyMutation,
-  useGetConsultancyQuery,
-  useDeleteConsultancyMutation,
+  useAddLanguageMutation,
+  useAddSkillMutation,
   useBecomeConsultantMutation,
+  useDeactivateMutation,
+  useDeleteConsultancyMutation,
+  useDeleteLanguageMutation,
+  useDeleteSkillMutation,
+  useFollowUserMutation,
+  useGetConsultancyMutation,
+  useGetFollowersMutation,
+  useGetFollowingMutation,
+  useGetLanguagesMutation,
+  useGetSkillsMutation,
+  useUnfollowUserMutation,
+  useUpdateProfileContactMutation,
+  useGetUserInfoMutation,
 } = usersApi;

@@ -1,42 +1,53 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Keyboard, ScrollView, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import {
+  ActivityIndicator,
+  Keyboard,
+  ScrollView,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useState } from 'react';
+import Box from '@/components/Box';
+import BaseScreenComponent from '@/components/BaseScreenComponent';
+import Text from '@/components/Text';
+import Button from '@/components/Button';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MainStack } from '@/utils/ParamList';
+import { OtpInput } from 'react-native-otp-entry';
+import { useThemeColors, useThemeText } from '@/hooks/useTheme';
+import { getFormattedTime } from '@/utils/helpers';
+import {
+  usePreSignupMutation,
+  useVerifyEmailOTPMutation,
+} from '@/state/services/auth.service';
+import { ErrorData } from '@/utils/types';
 import { showMessage } from 'react-native-flash-message';
-import { MainStack } from '../../utils/ParamList';
-import BaseScreenComponent from '../../components/BaseScreenComponent';
-import Box from '../../components/Box';
-import Text from '../../components/Text';
-import Button from '../../components/Button';
-import { usePreSignupMutation, useVerifyEmailOTPMutation } from '../../state/services/auth.service';
-import { useThemeColors } from '../../hooks/useTheme';
-import { getFormattedTime } from '../../utils/helpers';
-import useCountDown from '../../hooks/useCountDown';
-import MLogo from '../../assets/svgs/MLogo';
+import MLogo from '@/assets/svgs/MLogo';
+import { useCountdown } from '@/hooks/useCountDown';
 
-const initialTime = 4 * 60 * 1000;
-const interval = 1000;
+const initialTime = 4 * 60 * 1000; // initial time in milliseconds, defaults to 60000
+const interval = 1000; // interval to change remaining time amount, defaults to 1000
 
-type Props = NativeStackScreenProps<MainStack, 'SignupOTP'>;
-
-interface OTPForm {
-  otpCode: string;
-}
+interface Props extends NativeStackScreenProps<MainStack, 'SignupOTP'> {}
 
 const SignupOTPScreen = ({ navigation, route }: Props) => {
-  const [timeLeft, { start, reset }] = useCountDown(initialTime, interval);
+  const [timeLeft, { start, reset }] = useCountdown(initialTime, interval);
   const [code, setCode] = useState('');
-  const { primary, border, text } = useThemeColors();
+  const { foreground_primary, border, foreground } = useThemeColors();
+  const { regular } = useThemeText();
   const [presignup, { isLoading: resendLoading }] = usePreSignupMutation();
   const [verify, { isLoading }] = useVerifyEmailOTPMutation();
+  // console.log('params', route.params);
 
   const resend = useCallback(async () => {
     try {
       const { email } = route.params;
-      const response = await presignup({ body: { email } });
-      
+      const response = await presignup({
+        body: { email },
+      });
+      // console.log('resend response:', JSON.stringify(response));
       if (response?.error) {
-        const err = response as any;
+        const err = response as ErrorData;
         showMessage({
           message:
             err?.error?.data?.message ||
@@ -63,9 +74,9 @@ const SignupOTPScreen = ({ navigation, route }: Props) => {
         email,
         otpCode: code,
       });
-      
+      // console.log('verifyCode response:', JSON.stringify(verifyresponse));
       if (verifyresponse?.error) {
-        const err = verifyresponse as any;
+        const err = verifyresponse as ErrorData;
         showMessage({
           message:
             err?.error?.data?.message ||
@@ -87,6 +98,7 @@ const SignupOTPScreen = ({ navigation, route }: Props) => {
 
   useEffect(() => {
     start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -95,90 +107,105 @@ const SignupOTPScreen = ({ navigation, route }: Props) => {
         <Box flex={1} backgroundColor="background">
           <SafeAreaView style={{ flex: 1 }}>
             <Box flex={1}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Box onStartShouldSetResponder={() => true}>
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    padding="l"
-                    justifyContent="space-between">
-                    <MLogo height={41} />
-                    <TouchableOpacity onPress={navigation.goBack}>
-                      <Text color="label">Cancel</Text>
-                    </TouchableOpacity>
-                  </Box>
-                  <Box paddingVertical="l" paddingHorizontal="l" gap="s">
-                    <Text fontSize={24} variant="semibold">
-                      Email Verification
-                    </Text>
-                    <Text color="label" fontSize={16}>
-                      Input the code sent to{' '}
-                      <Text color="primary" fontSize={16}>
-                        {route.params.email}
-                      </Text>{' '}
-                      to verify your email
-                    </Text>
-                  </Box>
-                  <Box paddingHorizontal="l">
-                    <Input
-                      label="Verification Code"
-                      value={code}
-                      onChangeText={setCode}
-                      placeholder="Enter 6-digit code"
-                      keyboardType="numeric"
-                      maxLength={6}
-                      textAlign="center"
-                      style={{
-                        fontSize: 18,
-                        letterSpacing: 8,
-                        textAlign: 'center',
-                      }}
-                    />
-                  </Box>
-                  <Box alignItems="center" marginTop="l" gap="s">
-                    <Text>
-                      Expires in{' '}
-                      <Text color="danger">
-                        {getFormattedTime(timeLeft / 1000)}
-                      </Text>{' '}
-                      minute(s)
-                    </Text>
-                    <Text>
-                      Didn't receive a code?{' '}
-                      <Text
-                        disabled={timeLeft > 0}
-                        variant="bold"
-                        onPress={() => resend()}
-                        color="primary">
-                        Resend
-                      </Text>
-                    </Text>
-                  </Box>
-                  {resendLoading && (
-                    <Box padding="l" alignItems="center">
-                      <ActivityIndicator size="small" color={primary} />
+              <Box flex={1}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <Box onStartShouldSetResponder={() => true}>
+                    <Box
+                      flexDirection="row"
+                      alignItems="center"
+                      padding="l"
+                      justifyContent="space-between">
+                      <MLogo height={41} />
+                      <TouchableOpacity onPress={navigation.goBack}>
+                        <Text color="label">Cancel</Text>
+                      </TouchableOpacity>
                     </Box>
-                  )}
-                  <Box paddingHorizontal="l" marginTop="30" gap="l">
-                    <Button
-                      loading={isLoading}
-                      disabled={code.trim().length !== 6}
-                      displayText="Verify"
-                      onPress={() => {
-                        verifyCode();
-                      }}
-                    />
-                    <Box alignItems="center">
-                      <Text
-                        variant="bold"
-                        color="primary"
-                        onPress={navigation.goBack}>
-                        Back
+                    <Box paddingVertical="l" paddingHorizontal="l" gap="s">
+                      <Text fontSize={24} variant="semibold">
+                        Email Verification
+                      </Text>
+                      <Text color="label" fontSize={16}>
+                        Input the code sent to{' '}
+                        <Text color="foreground_primary" fontSize={16}>
+                          {route.params.email}
+                        </Text>{' '}
+                        to verify your email
                       </Text>
                     </Box>
+                    <Box paddingHorizontal="l">
+                      <OtpInput
+                        numberOfDigits={6}
+                        // secureTextEntry
+                        onTextChange={setCode}
+                        autoFocus
+                        focusColor={foreground_primary}
+                        type="numeric"
+                        theme={{
+                          pinCodeContainerStyle: {
+                            borderColor: border,
+                            height: 48,
+                            width: 48,
+                            borderRadius: 6,
+                          },
+                          focusedPinCodeContainerStyle: {
+                            borderColor: foreground_primary,
+                          },
+                          pinCodeTextStyle: {
+                            fontSize: 20,
+                            color: foreground,
+                            fontFamily: regular.fontFamily,
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box alignItems="center" marginTop="l" gap="s">
+                      <Text>
+                        Expires in{' '}
+                        <Text color="danger">
+                          {getFormattedTime(timeLeft / 1000)}
+                        </Text>{' '}
+                        minute(s)
+                      </Text>
+                      <Text>
+                        Didn’t receive a code?{' '}
+                        <Text
+                          disabled={timeLeft > 0}
+                          variant="bold"
+                          onPress={() => resend()}
+                          color="foreground_primary">
+                          Resend
+                        </Text>
+                      </Text>
+                    </Box>
+                    {resendLoading && (
+                      <Box padding="l" alignItems="center">
+                        <ActivityIndicator
+                          size="small"
+                          color={foreground_primary}
+                        />
+                      </Box>
+                    )}
+                    <Box paddingHorizontal="l" marginTop="30" gap="l">
+                      <Button
+                        loading={isLoading}
+                        disabled={code.trim().length !== 6}
+                        displayText="Verify"
+                        onPress={() => {
+                          verifyCode();
+                        }}
+                      />
+                      <Box alignItems="center">
+                        <Text
+                          variant="bold"
+                          color="foreground_primary"
+                          onPress={navigation.goBack}>
+                          Back
+                        </Text>
+                      </Box>
+                    </Box>
                   </Box>
-                </Box>
-              </ScrollView>
+                </ScrollView>
+              </Box>
             </Box>
           </SafeAreaView>
         </Box>

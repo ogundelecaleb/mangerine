@@ -78,8 +78,9 @@ const SignupScreen = ({ navigation }: Props) => {
 
       const fullName = `${firstName}${middleName ? ' ' + middleName : ''} ${lastName}`;
       
-      const result = await preSignup({ email }).unwrap();
-      
+        const result = await preSignup({
+        body: { email },
+      }).unwrap();
       showMessage({
         message: 'Verification code sent to your email',
         type: 'success',
@@ -307,7 +308,7 @@ const SignupScreen = ({ navigation }: Props) => {
                       <Button
                         loading={isLoading}
                         displayText="Sign Up"
-                        onPress={handleSubmit(onSubmit)}
+                        onPress={handleSubmit(onSubmit as any)}
                       />
                     </Box>
                     <Box

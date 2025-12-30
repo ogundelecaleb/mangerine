@@ -6,16 +6,21 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Image } from 'expo-image';
+import moment from 'moment';
 
 import Box from './Box';
 import Input from './Input';
 import Text from './Text';
 import Modal from './Modal';
+import CocoIcon from '../utils/custom-fonts/CocoIcon';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../utils/theme';
 import { useAppSelector, useAppDispatch } from '../state/hooks/redux';
-import { logout } from '../state/reducers/authSlice';
+import { signUserOut } from '../state/reducers/user.reducer';
 import { BottomTabList, MainStack } from '../utils/ParamList';
+import { addAlpha } from '../utils/helpers';
+import MLogo from '@/assets/svgs/MLogo';
 
 interface Props {
   onSearch?: () => void;
@@ -29,7 +34,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
   const [visible, setVisible] = useState(false);
   const [animatedWidth] = useState(new Animated.Value(0));
   const [showMenu, setShowMenu] = useState(false);
-  const user = useAppSelector(state => state.auth.user);
+  const user = useAppSelector(state => state.user?.user);
   const dispatch = useAppDispatch();
   const bottomTabNavigation = useNavigation<BottomTabNavigationProp<BottomTabList, 'Home'>>();
   const mainNavigation = useNavigation<NativeStackNavigationProp<MainStack>>();
@@ -46,8 +51,65 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
         icon: <MaterialCommunityIcons name="cash" size={16} color={theme.colors.foreground} />,
         onPress: () => {},
       },
+      {
+        title: 'Transaction History',
+        icon: <MaterialCommunityIcons name="cash" size={16} color={theme.colors.foreground} />,
+        onPress: () => {
+          setShowMenu(false);
+          setTimeout(() => {
+            mainNavigation.navigate('MyConsultation');
+          }, 900);
+        },
+      },
+      {
+        title: 'Earning Reports',
+        icon: <MaterialCommunityIcons name="cash" size={16} color={theme.colors.foreground} />,
+        onPress: () => {},
+      },
     ],
-    [theme.colors.foreground],
+    [theme.colors.foreground, mainNavigation],
+  );
+
+  const items2 = useMemo(
+    () => [
+      {
+        title: 'Scheduled Consultantion',
+        icon: <Ionicons name="bookmarks-outline" size={16} color={theme.colors.foreground} />,
+        onPress: () => {
+          setShowMenu(false);
+          setTimeout(() => {
+            mainNavigation.navigate('ScheduledConsultation');
+          }, 900);
+        },
+      },
+      {
+        title: 'Favorite Consultants',
+        icon: <Ionicons name="bookmarks-outline" size={16} color={theme.colors.foreground} />,
+        onPress: () => {
+          setShowMenu(false);
+          setTimeout(() => {
+            mainNavigation.navigate('FavouriteConsultants');
+          }, 900);
+        },
+      },
+    ],
+    [theme.colors.foreground, mainNavigation],
+  );
+
+  const items3 = useMemo(
+    () => [
+      {
+        title: 'My Business',
+        icon: <Ionicons name="bookmarks-outline" size={16} color={theme.colors.foreground} />,
+        onPress: () => {
+          setShowMenu(false);
+          setTimeout(() => {
+            mainNavigation.navigate('MyBusiness');
+          }, 900);
+        },
+      },
+    ],
+    [theme.colors.foreground, mainNavigation],
   );
 
   useEffect(() => {
@@ -77,14 +139,12 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
       <Box
         flexDirection="row"
         paddingHorizontal="l"
-        paddingVertical="m"
+        paddingVertical="mid"
         gap="s"
         alignItems="flex-start">
-        <Box paddingTop="m">
+        <Box paddingTop="mid">
           <TouchableOpacity onPress={() => setShowMenu(true)}>
-            <Text variant="bold" fontSize={24} color="foreground_primary">
-              Mangerine
-            </Text>
+            <MLogo height={28} />
           </TouchableOpacity>
         </Box>
         <Box
@@ -96,31 +156,31 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
           onLayout={e => setMaxWidth(e.nativeEvent.layout.width)}>
           {!visible && (
             <Box
-              marginTop="m"
+              marginTop="mid"
               flexDirection="row"
               alignItems="center"
               gap="m">
-              <TouchableOpacity
-                onPress={() => {
-                  if (onSearch) {
-                    onSearch();
-                    return;
-                  }
-                  setVisible(!visible);
-                }}>
-                <MaterialCommunityIcons
-                  name="magnify"
-                  size={30}
-                  color={theme.colors.label}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  name="bell-outline"
-                  size={30}
-                  color={theme.colors.label}
-                />
-              </TouchableOpacity>
+              <Box flexDirection="row">
+                <TouchableOpacity
+                  onPress={() => {
+                    if (onSearch) {
+                      onSearch();
+                      return;
+                    }
+                    setVisible(!visible);
+                  }}>
+                  <MaterialCommunityIcons
+                    name="magnify"
+                    size={30}
+                    color={theme.colors.label}
+                  />
+                </TouchableOpacity>
+              </Box>
+              <Box>
+                <TouchableOpacity>
+                  <CocoIcon name="notification-2" size={30} color={theme.colors.label} />
+                </TouchableOpacity>
+              </Box>
             </Box>
           )}
           <Box position="absolute" top={0} right={0}>
@@ -138,7 +198,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                   flexDirection="row"
                   alignItems="center"
                   flex={1}
-                  backgroundColor="faded"
+                  backgroundColor="searchbg"
                   borderRadius={8}
                   paddingHorizontal="m">
                   <MaterialCommunityIcons
@@ -164,7 +224,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                   </TouchableOpacity>
                 </Box>
                 <TouchableOpacity onPress={() => setVisible(!visible)}>
-                  <Text color="foreground_primary" variant="medium">
+                  <Text color="button_primary" variant="medium">
                     Cancel
                   </Text>
                 </TouchableOpacity>
@@ -173,15 +233,19 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
           </Box>
         </Box>
       </Box>
-
       <Modal
-        visible={showMenu}
-        onClose={() => setShowMenu(false)}>
+        isVisible={showMenu}
+        backdropColor={addAlpha('#000000', 0.2)}
+        style={{ margin: 0 }}
+        animationIn="slideInLeft"
+        animationOut="slideOutLeft"
+        onBackdropPress={() => setShowMenu(false)}
+        onBackButtonPress={() => setShowMenu(false)}>
         <Box backgroundColor="background" width="75%" flex={1}>
           <SafeAreaView style={{ flex: 1 }}>
             <Box flex={1} paddingVertical="l">
               <Box
-                marginTop="xl"
+                marginTop="30"
                 flexDirection="row"
                 alignItems="center"
                 paddingHorizontal="l"
@@ -193,12 +257,10 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                     borderWidth={1}
                     borderRadius={6}
                     width={50}
-                    borderColor="border"
+                    borderColor="minute_black"
                     justifyContent="center"
                     alignItems="center">
-                    <Text variant="bold" fontSize={20} color="foreground_primary">
-                      M
-                    </Text>
+                    <MLogo height={24} />
                   </Box>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -222,12 +284,24 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                       borderWidth={1}
                       overflow="hidden"
                       paddingBottom="l"
-                      borderColor="border"
+                      borderColor="faded_border"
                       borderRadius={8}>
                       <Box
                         height={106}
-                        backgroundColor="faded"
+                        backgroundColor="black"
                         position="relative">
+                        <Box
+                          position="absolute"
+                          top={0}
+                          left={0}
+                          height="100%"
+                          width="100%">
+                          <Image
+                            style={{ height: '100%', width: '100%' }}
+                            contentFit="cover"
+                            source={{ uri: user?.profileBanner || '' }}
+                          />
+                        </Box>
                       </Box>
                       <Box>
                         <Box marginHorizontal="l" style={{ marginTop: -30 }}>
@@ -241,13 +315,13 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                               borderRadius={50}
                               width={57}
                               overflow="hidden"
-                              backgroundColor="faded"
-                              borderWidth={1}
-                              justifyContent="center"
-                              alignItems="center">
-                              <Text variant="bold" fontSize={20}>
-                                {user?.fullName?.charAt(0) || 'U'}
-                              </Text>
+                              backgroundColor="danger"
+                              borderWidth={1}>
+                              <Image
+                                style={{ height: '100%', width: '100%' }}
+                                contentFit="cover"
+                                source={{ uri: user?.profilePics || '' }}
+                              />
                             </Box>
                           </TouchableOpacity>
                         </Box>
@@ -255,10 +329,10 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                       <Box marginTop="l">
                         <Box paddingHorizontal="m">
                           <Text variant="bold" fontSize={18}>
-                            {user?.fullName || 'User'}
+                            {user?.fullName}
                           </Text>
                           <Text>
-                            User | Individual
+                            {user?.title} | {user?.userType?.name}
                           </Text>
                         </Box>
                         <Box
@@ -266,36 +340,92 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                           alignItems="center"
                           gap="m"
                           paddingHorizontal="m"
-                          marginTop="m">
+                          marginTop="mid">
                           <Box flexDirection="row" alignItems="center" gap="s">
-                            <MaterialCommunityIcons
-                              name="map-marker"
+                            <CocoIcon
+                              name="location"
                               size={16}
                               color="#00A991"
                             />
-                            <Text fontSize={10}>Location</Text>
+                            <Text fontSize={10}>{user?.location}</Text>
                           </Box>
+                          {user?.dateOfBirth && (
+                            <Box
+                              flexDirection="row"
+                              alignItems="center"
+                              gap="s">
+                              <CocoIcon name="user" size={16} color="#00A991" />
+                              <Text fontSize={10}>
+                                Born{' '}
+                                {moment(user?.dateOfBirth).format('D MMMM')}
+                              </Text>
+                            </Box>
+                          )}
                         </Box>
-                        <Box marginTop="m" paddingHorizontal="m">
-                          <Text numberOfLines={5}>Welcome to Mangerine!</Text>
+                        <Box marginTop="mid" paddingHorizontal="m">
+                          <Text numberOfLines={5}>{user?.bio}</Text>
                         </Box>
                       </Box>
                     </Box>
                     <Box
-                      marginTop="m"
+                      marginTop="mid"
                       borderWidth={1}
                       overflow="hidden"
                       paddingVertical="l"
                       paddingHorizontal="m"
-                      borderColor="border"
+                      borderColor="faded_border"
                       borderRadius={8}>
-                      <Box gap="m">
+                      <Box gap="mid">
                         {items.map(i => (
                           <TouchableOpacity onPress={i.onPress} key={i.title}>
                             <Box
                               alignItems="center"
                               flexDirection="row"
-                              gap="m">
+                              gap="mid">
+                              {i.icon}
+                              <Text>{i.title}</Text>
+                            </Box>
+                          </TouchableOpacity>
+                        ))}
+                      </Box>
+                    </Box>
+                    <Box
+                      marginTop="mid"
+                      borderWidth={1}
+                      overflow="hidden"
+                      paddingVertical="l"
+                      paddingHorizontal="m"
+                      borderColor="faded_border"
+                      borderRadius={8}>
+                      <Box gap="mid">
+                        {items2.map(i => (
+                          <TouchableOpacity onPress={i.onPress} key={i.title}>
+                            <Box
+                              alignItems="center"
+                              flexDirection="row"
+                              gap="mid">
+                              {i.icon}
+                              <Text>{i.title}</Text>
+                            </Box>
+                          </TouchableOpacity>
+                        ))}
+                      </Box>
+                    </Box>
+                    <Box
+                      marginTop="mid"
+                      borderWidth={1}
+                      overflow="hidden"
+                      paddingVertical="l"
+                      paddingHorizontal="m"
+                      borderColor="faded_border"
+                      borderRadius={8}>
+                      <Box gap="mid">
+                        {items3.map(i => (
+                          <TouchableOpacity onPress={i.onPress} key={i.title}>
+                            <Box
+                              alignItems="center"
+                              flexDirection="row"
+                              gap="mid">
                               {i.icon}
                               <Text>{i.title}</Text>
                             </Box>
@@ -306,10 +436,10 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                   </Box>
                 </ScrollView>
               </Box>
-              <Box paddingHorizontal="xl" marginBottom="xl">
+              <Box paddingHorizontal="xl" marginBottom="mxl">
                 <TouchableOpacity
                   onPress={() => {
-                    dispatch(logout());
+                    dispatch(signUserOut());
                   }}>
                   <Box flexDirection="row" alignItems="center">
                     <Ionicons name="exit-sharp" color={theme.colors.danger} size={24} />

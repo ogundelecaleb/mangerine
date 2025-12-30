@@ -29,7 +29,7 @@ const SignupAvatarScreen = ({ navigation }: Props) => {
   const theme = useTheme<Theme>();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const user = useAppSelector(state => state.auth.user);
+  const user = useAppSelector(state => state.user?.user);
 
   const handleImageSelected = (imageUri: string) => {
     setAvatar(imageUri);

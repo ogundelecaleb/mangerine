@@ -33,7 +33,7 @@ interface Props {
 
 const ConsultantItem = ({ consultant }: Props) => {
   const theme = useTheme<Theme>();
-  const user = useAppSelector(state => state.auth.user);
+  const user = useAppSelector(state => state.user?.user);
   const navigation = useNavigation<NativeStackNavigationProp<MainStack>>();
   const [favouriteConsultant] = useFavouriteConsultantMutation();
   const [unfavouriteConsultant] = useUnfavouriteConsultantMutation();

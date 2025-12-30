@@ -1,37 +1,38 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-const useCountDown = (initialTime: number, interval: number = 1000) => {
-  const [timeLeft, setTimeLeft] = useState(initialTime);
+export const useCountdown = (initialTime: number, interval: number = 1000) => {
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const start = () => {
-    setIsActive(true);
-  };
-
-  const reset = () => {
+  const start = useCallback(() => {
     setTimeLeft(initialTime);
+    setIsActive(true);
+  }, [initialTime]);
+
+  const reset = useCallback(() => {
+    setTimeLeft(0);
     setIsActive(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((time) => {
-          if (time <= interval) {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= interval) {
             setIsActive(false);
             return 0;
           }
-          return time - interval;
+          return prevTime - interval;
         });
       }, interval);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
     return () => {
@@ -43,5 +44,3 @@ const useCountDown = (initialTime: number, interval: number = 1000) => {
 
   return [timeLeft, { start, reset }] as const;
 };
-
-export default useCountDown;

@@ -189,7 +189,6 @@ const AgoraCallModal = ({
       },
     };
 
-    console.log('registering handler...');
     agoraEngineRef.current?.registerEventHandler({
       onJoinChannelSuccess: (...args) => {
         console.log('Agora Success:');

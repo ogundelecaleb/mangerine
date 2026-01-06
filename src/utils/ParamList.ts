@@ -157,6 +157,67 @@ export interface Appointment {
   };
 }
 
+const data = {
+  agoraId: null,
+  appearInSearchResults: false,
+  authType: 'normal',
+  billingCycle: 'monthly',
+  bio: "Hi, I'm Sharon Grace, a UI/UX Designer with 2 years of experience. I specialize in intuitive interfaces and user research. Let's connect and create amazing digital experiences.",
+  businessName: '',
+  createdAt: '2025-12-25T15:01:56.627Z',
+  dateOfBirth: '1888-10-2',
+  email: 'ogundelecaleb13@gmail.com',
+  emailVisible: true,
+  fcmToken: null,
+  followerCount: 1,
+  followingCount: 0,
+  fullName: 'Kaileb',
+  id: 'f553d145-1f7f-4ac0-a4fe-1bb04a0892f6',
+  interfaceTheme: null,
+  isActive: true,
+  isConsultant: true,
+  isVerified: true,
+  location: 'Lagos Nigeria',
+  messagingPreference: 'everyone',
+  mobileNumber: '0900000000',
+  notificationPreferences: null,
+  phoneVisible: true,
+  postalAddress: null,
+  pricing: {
+    currency: 'USD',
+    dayBookPercentage: 5,
+    flatPrice: '3',
+    fourHoursDiscount: 1,
+    id: 'c3cd61ce-e9ac-4443-af65-9a1b9c9a1c56',
+    midDayBookPercentage: 8,
+    otherHoursDiscount: 1,
+    threeHoursDiscount: 1,
+    twoHoursDiscount: 2,
+  },
+  pricingPlan: 'free',
+  profileBanner:
+    'https://pub-ba5c350329564d4684130c16cdb28753.r2.dev/userProfiles/1767126670710_5133ed33e7daef98.jpg',
+  profileBannerId: 'userProfiles/1767126670710_5133ed33e7daef98.jpg',
+  profilePics:
+    'https://pub-ba5c350329564d4684130c16cdb28753.r2.dev/userProfiles/1767124189339_59ed1b340733d027.jpg',
+  profilePicsId: 'userProfiles/1767124189339_59ed1b340733d027.jpg',
+  pushEnabled: true,
+  regComplete: false,
+  resume: null,
+  secondaryNumber: null,
+  sseEnabled: true,
+  step: 0,
+  timeZone: '',
+  title: null,
+  uiLanguage: 'english',
+  uniqueId: 3,
+  updatedAt: '2025-12-31T12:12:17.000Z',
+  videoIntro: null,
+  videoIntroPubId: null,
+  websiteAddress: 'https://mprimo-one.vercel.app/home',
+  websiteVisible: true,
+};
+
 export interface Availability {
   id: string;
   date: string;
@@ -298,6 +359,7 @@ export type MainStack = {
   };
   PayConsultation: {
     consultant: Consultant;
+    paymentData?: any;
   };
   MyConsultation: undefined;
   ScheduledConsultation: undefined;

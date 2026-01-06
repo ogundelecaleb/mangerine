@@ -15,6 +15,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mangerine.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to the camera for video calls and profile pictures.",
+        "NSMicrophoneUsageDescription": "This app needs access to the microphone for video calls and voice messages.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images."
+      },
       "splash": {
       "image": "./assets/splash-screen.png",
         "resizeMode": "contain",
@@ -32,6 +37,15 @@
         "backgroundColor": "#111D4A"
       },
       "package": "com.mangerine.app",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
@@ -41,7 +55,22 @@
     "plugins": [
       "expo-dev-client",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for video calls.",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for video calls.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to share images in chat.",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to take photos."
+        }
+      ]
     ],
     "scheme": "mangerine",
     "extra": {

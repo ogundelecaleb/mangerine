@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text as RNText } from 'react-native';
@@ -6,12 +7,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import FlashMessage from 'react-native-flash-message';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts, Outfit_300Light, Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold } from '@expo-google-fonts/outfit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import theme from './src/utils/theme';
 import MainNavigator from './src/navigators/MainNavigator';
 import { store, persistor } from './src/state/store';
 import logoutUser from './src/utils/logout';
+import { STRIPE_KEY } from './src/utils/helpers';
+import { SocketProvider } from './src/state/context/SocketProvider';
 
 const LoadingScreen = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -27,6 +31,7 @@ export default function App() {
     'Outfit-SemiBold': Outfit_600SemiBold,
     'Outfit-Bold': Outfit_700Bold,
     'Outfit-ExtraBold': Outfit_800ExtraBold,
+    'cocooutlinefontello': require('./src/assets/fonts/cocooutlinefontello.ttf'),
   });
 
   // useEffect(() => {
@@ -49,13 +54,17 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<LoadingScreen />} persistor={persistor}>
-        <SafeAreaProvider>
-          <ThemeProvider theme={theme}>
-            <StatusBar style="auto" />
-            <MainNavigator />
-            <FlashMessage position="top" />
-          </ThemeProvider>
-        </SafeAreaProvider>
+        <SocketProvider>
+          <StripeProvider publishableKey={STRIPE_KEY || ''}>
+            <SafeAreaProvider>
+              <ThemeProvider theme={theme}>
+                <StatusBar style="auto" />
+                <MainNavigator />
+                <FlashMessage position="top" />
+              </ThemeProvider>
+            </SafeAreaProvider>
+          </StripeProvider>
+        </SocketProvider>
       </PersistGate>
     </Provider>
   );

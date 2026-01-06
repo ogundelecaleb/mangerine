@@ -11,6 +11,7 @@ import ProfileScreen from '../screens/Tabs/ProfileScreen';
 import HomeScreen from '../screens/Tabs/HomeScreen';
 import ConsultantScreen from '../screens/Tabs/ConsultantScreen';
 import PlaceholderScreen from '../screens/PlaceholderScreen';
+import MessageScreen from '../screens/Tabs/MessageScreen';
 
 const Tab = createBottomTabNavigator<BottomTabList>();
 
@@ -51,7 +52,7 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen
         name="Message"
-        component={PlaceholderScreen}
+        component={MessageScreen}
         initialParams={{ title: 'Messages' }}
         options={{
           tabBarIcon: ({ focused }) =>

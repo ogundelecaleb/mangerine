@@ -21,6 +21,8 @@ import { setAuthTrigger } from '../../state/reducers/user.reducer';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
 import CheckBox from '@/components/Checkbox';
+import { useCreateIntentMutation } from '../../state/services/payment.service';
+import { useStripe } from '@stripe/stripe-react-native';
 
 LocaleConfig.locales.en = {
   monthNames: [
@@ -82,6 +84,9 @@ const BookConsultationScreen = ({
   const [getAvailability, { isLoading: availabilityLoading }] =
     useGetConsultantAvailabilityMutation();
   const [createBooking, { isLoading }] = useBookAppointmentMutation();
+  const [createIntent, { isLoading: intentLoading }] =
+    useCreateIntentMutation();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [availability, setAvailability] = useState<Availability[]>([]);
   const fullMonth = useMemo(
     () =>
@@ -101,6 +106,7 @@ const BookConsultationScreen = ({
   );
   const dispatch = useDispatch();
 
+  console.log(" route?.params?.consultant",  route?.params?.consultant)
   const availableMarkedDate = useMemo(() => {
     const transformedAvailability = availability.map(availabledate => ({
       [availabledate.date]: {
@@ -223,6 +229,92 @@ const BookConsultationScreen = ({
     video,
   ]);
 
+  const initiatePayment = useCallback(async () => {
+    const totalMinutes = selectedTime
+      .map(x =>
+        availability
+          .find(a => a.date === markedDate)
+          ?.timeslots.find(xx => xx.id === x),
+      )
+      .reduce((accum, currentValue) => accum + (currentValue?.duration || 0), 0);
+
+    const amount = Number(
+      ((totalMinutes / 60) * (route?.params?.consultant?.pricing?.flatPrice || 0)).toFixed(2)
+    );
+
+    try {
+      const response = await createIntent({
+        body: {
+          amount,
+          currency: 'usd',
+          consultationDetails: {
+            availabilityId: availability.find(a => a.date === markedDate)?.id!,
+            consultantId: route?.params?.consultant?.id,
+            message,
+            timeslots: selectedTime,
+            userId: user?.id!,
+            videoOption: video,
+          },
+        },
+      });
+      
+      if (response?.error) {
+        const err = response as ErrorData;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
+          type: 'danger',
+        });
+        return;
+      }
+
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: 'Mangerine',
+        paymentIntentClientSecret: response?.data?.data?.secret || '',
+      });
+      
+      if (initError) {
+        showMessage({
+          message: `Error: ${initError?.code} - ${initError.message}`,
+          type: 'danger',
+        });
+        return;
+      }
+      
+      const { error: presentError } = await presentPaymentSheet();
+      
+      if (presentError) {
+        showMessage({
+          message: `Error: ${presentError?.code} - ${presentError.message}`,
+          type: 'danger',
+        });
+        return;
+      }
+      
+      bookAppointment();
+    } catch (error) {
+      console.log('payment initiation error:', error);
+      showMessage({
+        message: 'Failed to initiate payment',
+        type: 'danger',
+      });
+    }
+  }, [
+    availability,
+    bookAppointment,
+    createIntent,
+    initPaymentSheet,
+    markedDate,
+    message,
+    presentPaymentSheet,
+    route?.params?.consultant,
+    selectedTime,
+    user?.id,
+    video,
+  ]);
+
   return (
     <BaseScreenComponent>
       <Box flex={1}>
@@ -248,7 +340,7 @@ const BookConsultationScreen = ({
               <Box flex={1} alignItems="center">
                 <Text
                   variant="semibold"
-                  fontSize={20}
+                  fontSize={16}
                   textTransform="capitalize">
                   Book Consultation
                 </Text>
@@ -350,7 +442,7 @@ const BookConsultationScreen = ({
                   </Box>
                   {markedDate && (
                     <Box marginHorizontal="l" gap="m">
-                      <Text fontSize={20} variant="semibold">
+                      <Text fontSize={16} variant="semibold">
                         Select Time
                       </Text>
                       <Box
@@ -403,11 +495,12 @@ const BookConsultationScreen = ({
                   )}
                   {selectedTime && (
                     <Box marginHorizontal="l" gap="m" marginTop="l">
-                      <Text fontSize={20} variant="semibold">
+                      <Text fontSize={16} variant="semibold">
                         Duration & Pricing
                       </Text>
                       <Box>
                         <Input
+                          editable={false}
                           value={
                             selectedTime?.length > 0
                               ? `${selectedTime
@@ -420,16 +513,29 @@ const BookConsultationScreen = ({
                                     (accum, currentValue) =>
                                       accum + (currentValue?.duration || 0),
                                     0,
-                                  )} minutes`
+                                  )} minutes  ($${(
+                                  (selectedTime
+                                    .map(x =>
+                                      availability
+                                        .find(a => a.date === markedDate)
+                                        ?.timeslots.find(xx => xx.id === x),
+                                    )
+                                    .reduce(
+                                      (accum, currentValue) =>
+                                        accum + (currentValue?.duration || 0),
+                                      0,
+                                    ) /
+                                    60) *
+                                  (route?.params?.consultant?.pricing?.flatPrice || 0)
+                                ).toFixed(2)})`
                               : ''
                           }
-                          editable={false}
                         />
                       </Box>
                     </Box>
                   )}
                   <Box marginHorizontal="l" gap="m" marginTop="l">
-                    <Text fontSize={20} variant="semibold">
+                    <Text fontSize={16} variant="semibold">
                       Message to Consultant
                     </Text>
                     <Box>
@@ -465,8 +571,8 @@ const BookConsultationScreen = ({
                   <Box marginHorizontal="l" marginTop="xxl" marginBottom="xl">
                     <Button
                       disabled={!markedDate || !selectedTime.length}
-                      loading={isLoading}
-                      onPress={bookAppointment}
+                      loading={intentLoading || isLoading}
+                      onPress={initiatePayment}
                       displayText="Book Consultation"
                     />
                   </Box>

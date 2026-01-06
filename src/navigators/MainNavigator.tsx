@@ -56,6 +56,7 @@ import PaymentSettingscreen from '@/screens/Main/PaymentSettingsScreen';
 import AccountSettingScreen from '@/screens/Main/AccountSettingScreen';
 import GeneralSettingscreen from '@/screens/Main/GeneralSettingScreen';
 import HelpAndSupportcreen from '@/screens/Main/HelpAndSupportScreen';
+import ChatScreen from '@/screens/Main/ChatScreen';
 
 const Stack = createNativeStackNavigator<MainStack>();
 
@@ -272,6 +273,7 @@ const MainNavigator = () => {
               name="HelpAndSupport"
               component={HelpAndSupportcreen}
             />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>

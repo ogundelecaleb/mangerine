@@ -1,6 +1,6 @@
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { LocaleConfig } from 'react-native-calendars';
@@ -12,6 +12,12 @@ import Button from '../../components/Button';
 import { MainStack } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
+import { useBookAppointmentMutation } from '../../state/services/appointment.service';
+import { useAuth } from '../../state/hooks/user.hook';
+import { useDispatch } from 'react-redux';
+import { setAuthTrigger } from '../../state/reducers/user.reducer';
+import { showMessage } from 'react-native-flash-message';
+import { ErrorData } from '../../utils/ParamList';
 
 LocaleConfig.locales.en = {
   monthNames: [
@@ -60,8 +66,80 @@ LocaleConfig.defaultLocale = 'en';
 
 const PayConsultationScreen = ({
   navigation,
+  route,
 }: NativeStackScreenProps<MainStack, 'PayConsultation'>) => {
   const theme = useTheme<Theme>();
+  const { user } = useAuth();
+  const dispatch = useDispatch();
+  const [createBooking, { isLoading }] = useBookAppointmentMutation();
+  const [paymentData] = useState(route?.params?.paymentData);
+
+  const confirmPayment = useCallback(async () => {
+    try {
+      if (!paymentData?.paymentDetails) {
+        showMessage({
+          message: 'Payment data is missing',
+          type: 'danger',
+        });
+        return;
+      }
+
+      const { consultationDetails } = paymentData;
+      
+      const response = await createBooking({
+        body: {
+          availabilityId: consultationDetails.availabilityId,
+          consultantId: consultationDetails.consultantId,
+          message: consultationDetails.message,
+          timeslots: consultationDetails.timeslots,
+          userId: consultationDetails.userId,
+          videoOption: consultationDetails.videoOption,
+        },
+      });
+      
+      if (response?.error) {
+        const err = response as ErrorData;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
+          type: 'danger',
+        });
+        return;
+      }
+      
+      dispatch(
+        setAuthTrigger({
+          trigger: true,
+        }),
+      );
+      
+      navigation.goBack();
+      showMessage({
+        message: 'Payment successful! Booking confirmed.',
+        type: 'success',
+      });
+    } catch (error) {
+      console.log('payment confirmation error:', error);
+      showMessage({
+        message: 'Failed to confirm booking',
+        type: 'danger',
+      });
+    }
+  }, [createBooking, dispatch, navigation, paymentData]);
+
+  const paymentDetails = paymentData?.paymentDetails;
+
+  useEffect(() => {
+    if (!paymentData) {
+      showMessage({
+        message: 'Invalid payment session',
+        type: 'danger',
+      });
+      navigation.goBack();
+    }
+  }, [paymentData, navigation]);
 
   return (
     <BaseScreenComponent>
@@ -126,33 +204,37 @@ const PayConsultationScreen = ({
                           <Text variant="medium">Consultation Fee</Text>
                         </Box>
                         <Box>
-                          <Text>$50.00</Text>
+                          <Text>${paymentDetails?.basePrice?.toFixed(2) || '0.00'}</Text>
                         </Box>
                       </Box>
-                      <Box
-                        flexDirection="row"
-                        gap="l"
-                        alignItems="center"
-                        justifyContent="space-between">
-                        <Box flex={1}>
-                          <Text variant="medium">Mangerine Fee</Text>
+                      {paymentDetails?.hasRecording && (
+                        <Box
+                          flexDirection="row"
+                          gap="l"
+                          alignItems="center"
+                          justifyContent="space-between">
+                          <Box flex={1}>
+                            <Text variant="medium">Recording Fee</Text>
+                          </Box>
+                          <Box>
+                            <Text>$5.00</Text>
+                          </Box>
                         </Box>
-                        <Box>
-                          <Text>$10.00</Text>
+                      )}
+                      {(paymentDetails?.penaltyAmount || 0) > 0 && (
+                        <Box
+                          flexDirection="row"
+                          gap="l"
+                          alignItems="center"
+                          justifyContent="space-between">
+                          <Box flex={1}>
+                            <Text variant="medium">Penalty ({paymentDetails?.penaltyInfo})</Text>
+                          </Box>
+                          <Box>
+                            <Text>${paymentDetails?.penaltyAmount?.toFixed(2)}</Text>
+                          </Box>
                         </Box>
-                      </Box>
-                      <Box
-                        flexDirection="row"
-                        gap="l"
-                        alignItems="center"
-                        justifyContent="space-between">
-                        <Box flex={1}>
-                          <Text variant="medium">Recording Fee</Text>
-                        </Box>
-                        <Box>
-                          <Text>$5.00</Text>
-                        </Box>
-                      </Box>
+                      )}
                       <Box
                         flexDirection="row"
                         gap="l"
@@ -165,14 +247,18 @@ const PayConsultationScreen = ({
                         </Box>
                         <Box>
                           <Text variant="medium" fontSize={16}>
-                            $65.00
+                            ${paymentDetails?.price?.toFixed(2) || '0.00'}
                           </Text>
                         </Box>
                       </Box>
                     </Box>
                   </Box>
                   <Box marginHorizontal="l" marginTop="xxl" marginBottom="xl">
-                    <Button displayText="Confirm Payment" />
+                    <Button 
+                      displayText="Confirm Payment" 
+                      onPress={confirmPayment}
+                      loading={isLoading}
+                    />
                   </Box>
                 </Box>
               </ScrollView>

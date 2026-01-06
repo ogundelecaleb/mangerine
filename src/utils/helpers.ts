@@ -1,4 +1,7 @@
-import { API_BASE_URL } from '../state/config';
+import { API_BASE_URL, STRIPE_PUBLIC_KEY, AGORA_APP_ID } from '../state/config';
+
+export const STRIPE_KEY = STRIPE_PUBLIC_KEY || '';
+export { AGORA_APP_ID };
 
 export const getUrl = (): string => {
   return API_BASE_URL;
@@ -153,4 +156,15 @@ export const convertTime12to24 = (time12h: string) => {
   }
 
   return `${hours}:${minutes}`;
+};
+
+export const makeid = (length: number) => {
+  var result = '';
+  var characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 };

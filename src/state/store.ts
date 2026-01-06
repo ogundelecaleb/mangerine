@@ -25,6 +25,11 @@ import setting from './reducers/setting.reducer';
 import posts from './reducers/posts.reducer';
 import groups from './reducers/groups.reducer';
 import chat from './reducers/chat.reducer';
+import { chatApi } from './services/chat.service';
+import { PaymentApi } from './services/payment.service';
+import { UploadsApi } from './services/uploads.service';
+import { FreedomApi } from './services/freedom.service';
+import { VideoApi } from './services/video.service';
 import { SettingApi } from './services/setting.service';
 
 const persistConfig = {
@@ -51,6 +56,11 @@ const reducers = combineReducers({
   [educationApi.reducerPath]: educationApi.reducer,
   [experienceApi.reducerPath]: experienceApi.reducer,
   [SettingApi.reducerPath]: SettingApi.reducer,
+  [chatApi.reducerPath]: chatApi.reducer,
+  [PaymentApi.reducerPath]: PaymentApi.reducer,
+  [UploadsApi.reducerPath]: UploadsApi.reducer,
+  [FreedomApi.reducerPath]: FreedomApi.reducer,
+  [VideoApi.reducerPath]: VideoApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducers);
@@ -70,7 +80,12 @@ export const store = configureStore({
       workApi.middleware,
       educationApi.middleware,
       experienceApi.middleware,
-      SettingApi.middleware
+      SettingApi.middleware,
+      chatApi.middleware,
+      PaymentApi.middleware,
+      UploadsApi.middleware,
+      FreedomApi.middleware,
+      VideoApi.middleware,
     ]),
 });
 

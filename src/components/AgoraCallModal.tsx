@@ -305,11 +305,10 @@ const AgoraCallModal = ({
   }, [closeModal]);
 
   const cleanupAgoraEngine = () => {
-    console.log('cleaning engine...');
     agoraEngineRef.current?.unregisterEventHandler(eventHandler.current!);
     agoraEngineRef.current?.release();
-    console.log('cleaned engine...');
   };
+  
 
   useEffect(() => {
     if (videoToken && triggerJoin) {

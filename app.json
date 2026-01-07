@@ -21,7 +21,7 @@
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images."
       },
       "splash": {
-      "image": "./assets/splash-screen.png",
+        "image": "./assets/splash-screen.png",
         "resizeMode": "contain",
         "backgroundColor": "#111D4A"
       }
@@ -32,19 +32,21 @@
         "backgroundColor": "#111D4A"
       },
       "splash": {
-      "image": "./assets/splash-screen.png",
+        "image": "./assets/splash-screen.png",
         "resizeMode": "contain",
         "backgroundColor": "#111D4A"
       },
       "package": "com.mangerine.app",
       "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO",
-        "MODIFY_AUDIO_SETTINGS",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

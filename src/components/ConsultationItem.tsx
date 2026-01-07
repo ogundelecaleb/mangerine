@@ -1,5 +1,5 @@
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,12 +11,14 @@ import Box from './Box';
 import Text from './Text';
 import Button from './Button';
 import ConfirmModal from './ConfirmModal';
+import AgoraCallModal from './AgoraCallModal';
 import { MainStack, Appointment, ErrorData } from '../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../utils/theme';
 import { setAuthTrigger } from '../state/reducers/user.reducer';
 import { useCancelAppointmentMutation } from '../state/services/appointment.service';
 import { addAlpha } from '../utils/helpers';
+import { useAuth } from '../state/hooks/user.hook';
 
 interface Props {
   item: Appointment;
@@ -25,11 +27,62 @@ interface Props {
 
 const ConsultationItem = ({ item, onRefresh }: Props) => {
   const theme = useTheme<Theme>();
+  const { user } = useAuth();
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [apptDeleted, setApptDeleted] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<MainStack>>();
   const [cancelBooking, { isLoading: cancelLoading }] = useCancelAppointmentMutation();
   const dispatch = useDispatch();
+
+  const appointmentStatus = useMemo(() => {
+    const appointmentDate = moment(item?.availability?.date);
+    const startTime = item?.timeslots?.[0]?.startTime;
+    const endTime = item?.timeslots?.[0]?.endTime;
+    
+    if (!startTime || !endTime) return { canJoin: false, status: 'unknown', message: '' };
+    
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    
+    const appointmentStart = appointmentDate.clone().set({ hour: startHour, minute: startMin });
+    const appointmentEnd = appointmentDate.clone().set({ hour: endHour, minute: endMin });
+    
+    const now = moment();
+    const windowStart = appointmentStart.clone().subtract(5, 'minutes');
+    const windowEnd = appointmentEnd.clone().add(15, 'minutes');
+    
+    // Check if can join (5 mins before to 15 mins after)
+    if (now.isBetween(windowStart, windowEnd)) {
+      return { canJoin: true, status: 'active', message: 'Join Now' };
+    }
+    
+    // Check if appointment has passed
+    if (now.isAfter(windowEnd)) {
+      return { canJoin: false, status: 'completed', message: 'Completed' };
+    }
+    
+    // Appointment is upcoming
+    const duration = moment.duration(appointmentStart.diff(now));
+    const hours = Math.floor(duration.asHours());
+    const minutes = duration.minutes();
+    
+    if (hours > 0) {
+      return { canJoin: false, status: 'upcoming', message: `Starts in ${hours}h ${minutes}m` };
+    } else if (minutes > 0) {
+      return { canJoin: false, status: 'upcoming', message: `Starts in ${minutes}m` };
+    }
+    
+    return { canJoin: false, status: 'upcoming', message: 'Starting soon' };
+  }, [item]);
+
+  const conversation = useMemo(() => ({
+    id: item?.id,
+    consultantId: item?.consultantId,
+    userId: item?.userId,
+    consultant: item?.consultant,
+    user: item?.user,
+  }), [item]);
 
   const cancelThisAppointment = useCallback(async () => {
     try {
@@ -75,70 +128,85 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
           height: 0,
           width: 0,
         }}>
-        <Box
-          marginBottom="l"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between">
-          <Box flexDirection="row" alignItems="center" gap="s">
-            <Box
-              height={44}
-              width={44}
-              borderRadius={4}
-              backgroundColor="faded"
-              overflow="hidden"
-              justifyContent="center"
-              alignItems="center">
-              <Text variant="semibold" fontSize={18}>
-                {item?.consultant?.fullName?.charAt(0) || 'C'}
-              </Text>
+        <Box marginBottom="m">
+          <Box flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="m">
+            <Box flexDirection="row" alignItems="center" gap="s" flex={1}>
+              <Box
+                height={48}
+                width={48}
+                borderRadius={24}
+                backgroundColor="faded"
+                overflow="hidden"
+                justifyContent="center"
+                alignItems="center">
+                <Text variant="semibold" fontSize={18}>
+                  {item?.consultant?.fullName?.charAt(0) || 'C'}
+                </Text>
+              </Box>
+              <Box flex={1}>
+                <Text variant="semibold" fontSize={16} numberOfLines={1}>
+                  {item?.consultant?.fullName}
+                </Text>
+                <Text fontSize={13} color="label" numberOfLines={1}>
+                  {item?.consultant?.title}
+                </Text>
+              </Box>
             </Box>
-            <Box>
-              <Text variant="semibold" fontSize={16}>
-                {item?.consultant?.fullName}
-              </Text>
-              <Text>{item?.consultant?.title}</Text>
+            <Box flexDirection="row" alignItems="center" gap="s">
+              <TouchableOpacity>
+                <Box
+                  width={40}
+                  height={40}
+                  borderRadius={20}
+                  backgroundColor="faded"
+                  justifyContent="center"
+                  alignItems="center">
+                  <MaterialCommunityIcons name="message" color={theme.colors.label} size={20} />
+                </Box>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => appointmentStatus.canJoin && setShowCallModal(true)}
+                disabled={!appointmentStatus.canJoin}
+              >
+                <Box
+                  width={40}
+                  height={40}
+                  backgroundColor={appointmentStatus.canJoin ? "primary" : "faded"}
+                  borderRadius={20}
+                  justifyContent="center"
+                  alignItems="center">
+                  <MaterialCommunityIcons 
+                    name="video" 
+                    color={appointmentStatus.canJoin ? "#FFF" : theme.colors.label} 
+                    size={20} 
+                  />
+                </Box>
+              </TouchableOpacity>
             </Box>
           </Box>
-          <Box flexDirection="row" alignItems="center" gap="s">
-            <TouchableOpacity>
-              <Box
-                width={40}
-                height={40}
-                borderRadius={6}
-                backgroundColor="background"
-                justifyContent="center"
-                alignItems="center"
-                shadowColor="foreground"
-                shadowOpacity={0.1}
-                shadowRadius={4}
-                elevation={2}
-                shadowOffset={{
-                  height: 0,
-                  width: 0,
-                }}>
-                <MaterialCommunityIcons name="message" color={theme.colors.label} size={20} />
-              </Box>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Box
-                width={40}
-                height={40}
-                backgroundColor="background"
-                borderRadius={6}
-                justifyContent="center"
-                alignItems="center"
-                shadowColor="foreground"
-                shadowOpacity={0.1}
-                shadowRadius={4}
-                elevation={2}
-                shadowOffset={{
-                  height: 0,
-                  width: 0,
-                }}>
-                <MaterialCommunityIcons name="video" color={theme.colors.label} size={20} />
-              </Box>
-            </TouchableOpacity>
+          
+          {/* Status Badge */}
+          <Box
+            alignSelf="flex-start"
+            paddingHorizontal="m"
+            paddingVertical="xs"
+            borderRadius={12}
+            style={{
+              backgroundColor:
+                appointmentStatus.status === 'active' ? addAlpha(theme.colors.primary, 0.1) :
+                appointmentStatus.status === 'completed' ? addAlpha('#9E9E9E', 0.1) :
+                addAlpha(theme.colors.primary, 0.05)
+            }}>
+            <Text 
+              fontSize={12} 
+              variant="medium"
+              color={
+                appointmentStatus.status === 'active' ? 'primary' :
+                appointmentStatus.status === 'completed' ? 'label' :
+                'foreground'
+              }>
+              {appointmentStatus.message}
+            </Text>
           </Box>
         </Box>
         <Box
@@ -172,24 +240,26 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
             </Text>
           </Box>
         </Box>
-        <Box flexDirection="row" gap="l">
-          <Box flex={1}>
-            <Button
-              displayText="Cancel"
-              onPress={() => setCancelConfirm(true)}
-            />
+        {appointmentStatus.status !== 'completed' && (
+          <Box flexDirection="row" gap="m">
+            <Box flex={1}>
+              <Button
+                displayText="Cancel"
+                onPress={() => setCancelConfirm(true)}
+              />
+            </Box>
+            <Box flex={1}>
+              <Button
+                displayText="Reschedule"
+                onPress={() =>
+                  navigation.navigate('RescheduleConsultation', {
+                    appointment: item,
+                  })
+                }
+              />
+            </Box>
           </Box>
-          <Box flex={1}>
-            <Button
-              displayText="Reschedule"
-              onPress={() =>
-                navigation.navigate('RescheduleConsultation', {
-                  appointment: item,
-                })
-              }
-            />
-          </Box>
-        </Box>
+        )}
       </Box>
       
       {cancelLoading && (
@@ -276,6 +346,13 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
             </Box>
           </Box>
         }
+      />
+
+      <AgoraCallModal
+        isVisible={showCallModal}
+        closeModal={() => setShowCallModal(false)}
+        conversation={conversation as any}
+        caller={user?.id || ''}
       />
     </>
   );

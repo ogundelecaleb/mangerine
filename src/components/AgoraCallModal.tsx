@@ -1,14 +1,14 @@
-import { Platform, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Platform, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from 'react';
-import Modal from './Modal';
-import Box from './Box';
+} from "react";
+import Modal from "./Modal";
+import Box from "./Box";
 import {
   createAgoraRtcEngine,
   ChannelProfileType,
@@ -18,18 +18,18 @@ import {
   RtcConnection,
   IRtcEngineEventHandler,
   VideoSourceType,
-} from 'react-native-agora';
-import * as MediaLibrary from 'expo-media-library';
-import { Camera } from 'expo-camera';
-import { Conversation, ErrorData } from '../utils/types';
-import { useAuth } from '../state/hooks/user.hook';
-import Text from './Text';
-import { useGetVideoTokenMutation } from '../state/services/video.service';
-import { showMessage } from 'react-native-flash-message';
-import { AGORA_APP_ID } from '../utils/helpers';
-import MicSVG from '../assets/svgs/MicSVG';
-import VideoSVG from '../assets/svgs/VideoSVG';
-import PhoneSVG from '../assets/svgs/PhoneSVG';
+} from "react-native-agora";
+import * as MediaLibrary from "expo-media-library";
+import { Camera } from "expo-camera";
+import { Conversation, ErrorData } from "../utils/types";
+import { useAuth } from "../state/hooks/user.hook";
+import Text from "./Text";
+import { useGetVideoTokenMutation } from "../state/services/video.service";
+import { showMessage } from "react-native-flash-message";
+import { AGORA_APP_ID } from "../utils/helpers";
+import MicSVG from "../assets/svgs/MicSVG";
+import VideoSVG from "../assets/svgs/VideoSVG";
+import PhoneSVG from "../assets/svgs/PhoneSVG";
 
 interface Props {
   isVisible?: boolean;
@@ -60,30 +60,28 @@ interface Props {
 // }
 
 function stringToAgoraUid(userId: string): number {
-    let hash = 0;
-    for (let i = 0; i < userId.length; i++) {
-      const char = userId.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    const char = userId.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
   }
+  return Math.abs(hash);
+}
 const appId = AGORA_APP_ID;
 
-const AgoraCallModal = ({
-  isVisible,
-  closeModal,
-  conversation,
-}: Props) => {
+const AgoraCallModal = ({ isVisible, closeModal, conversation }: Props) => {
   const { user } = useAuth();
   const agoraEngineRef = useRef<IRtcEngine>(null);
   const [isJoined, setIsJoined] = useState(false);
-  const isHost = true;
+  const isHost = conversation?.consultantId === user?.id;
   const [remoteUid, setRemoteUid] = useState(0);
   const channelName = conversation?.id;
-  const localUid = stringToAgoraUid(user?.id || '');
+  const localUid = stringToAgoraUid(user?.id || "");
 
   const eventHandler = useRef<IRtcEngineEventHandler>(null);
+  const [isEngineReady, setIsEngineReady] = useState(false);
+  const [localVideoEnabled, setLocalVideoEnabled] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCameraMuted, setIsCameraMuted] = useState(false);
   const otherUser = useMemo(
@@ -91,49 +89,51 @@ const AgoraCallModal = ({
       conversation?.consultantId === user?.id
         ? conversation?.user
         : conversation?.consultant,
-    [conversation, user],
+    [conversation, user]
   );
-  const [triggerJoin, setTriggerJoin] = useState(false);
   const [getVideoToken, {}] = useGetVideoTokenMutation();
-  const [videoToken, setVideoToken] = useState('');
+  const [videoToken, setVideoToken] = useState("");
 
   const loadVideoToken = useCallback(async () => {
     try {
       if (!user?.id || !conversation?.id) {
         return;
       }
-      
+
       // console.log('=== TOKEN REQUEST DEBUG ===');
-      console.log('User ID (original):', user?.id);
-      console.log('Channel Name:', conversation?.id);
-      console.log('Local UID:', localUid);
-      console.log('App ID:', appId);
+      console.log("User ID (original):", user?.id);
+      console.log("Channel Name:", conversation?.id);
+      console.log("Local UID:", localUid);
+      console.log("App ID:", appId);
       // console.log('========================');
-      
+
       const response = await getVideoToken({
         channelName: conversation?.id,
         uid: localUid,
       });
-      
-      console.log('=== TOKEN RESPONSE ===');
-      console.log('Full response:', JSON.stringify(response, null, 2));
-      console.log('Token:', (response as any)?.data?.token?.substring(0, 50) + '...');
-      console.log('=====================');
-      
+
+      console.log("=== TOKEN RESPONSE ===");
+      console.log("Full response:", JSON.stringify(response, null, 2));
+      console.log(
+        "Token:",
+        (response as any)?.data?.token?.substring(0, 50) + "..."
+      );
+      console.log("=====================");
+
       if (response?.error) {
         const err = response as ErrorData;
         showMessage({
           message:
             err?.error?.data?.message ||
             err?.error?.data?.error ||
-            'Something went wrong',
-          type: 'danger',
+            "Something went wrong",
+          type: "danger",
         });
         return;
       }
-      setVideoToken((response as any)?.data?.token || '');
+      setVideoToken((response as any)?.data?.token || "");
     } catch (error) {
-      console.log('get availability error', JSON.stringify(error));
+      console.log("get availability error", JSON.stringify(error));
     }
   }, [getVideoToken, conversation, user, localUid]);
 
@@ -144,86 +144,105 @@ const AgoraCallModal = ({
   };
 
   const toggleCamera = () => {
-    const mute = !isCameraMuted;
-    agoraEngineRef.current?.muteLocalVideoStream(mute);
-    setIsCameraMuted(mute);
+    if (!agoraEngineRef.current) return;
+
+    const newState = !isCameraMuted;
+    agoraEngineRef.current.enableLocalVideo(!newState);
+    setIsCameraMuted(newState);
+    setLocalVideoEnabled(!newState);
   };
 
   const getPermission = async () => {
     try {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
       const audioPermission = await Camera.requestMicrophonePermissionsAsync();
-      
+
       // console.log('Camera permission:', cameraPermission.granted);
       // console.log('Audio permission:', audioPermission.granted);
-      
+
       if (!cameraPermission.granted || !audioPermission.granted) {
-        console.log('Permissions not granted');
+        console.log("Permissions not granted");
         showMessage({
-          message: 'Camera and microphone permissions are required for video calls',
-          type: 'warning',
+          message:
+            "Camera and microphone permissions are required for video calls",
+          type: "warning",
         });
         return false;
       }
       return true;
     } catch (error) {
-      console.log('Permission error:', error);
+      console.log("Permission error:", error);
       return false;
     }
   };
 
   const setupEventHandler = useCallback(() => {
-    eventHandler.current = {
-      onJoinChannelSuccess: (...args) => {
-        console.log('onJoinChannelSuccess', ...args);
+    if (!agoraEngineRef.current) return;
+
+    console.log("Setting up event handler for UID:", localUid);
+
+    agoraEngineRef.current.registerEventHandler({
+      onJoinChannelSuccess: (connection, elapsed) => {
+        console.log("Join channel success:", connection.channelId, elapsed);
         setIsJoined(true);
       },
-      onUserJoined: (_connection: RtcConnection, uid: number) => {
+      onUserJoined: (connection, uid, elapsed) => {
+        console.log("User joined:", uid, "My UID:", localUid);
         setRemoteUid(uid);
       },
-      onUserOffline: (_connection: RtcConnection, uid: number) => {
-        setRemoteUid(uid);
+      onUserOffline: (connection, uid, reason) => {
+        console.log("User offline:", uid, reason);
+        if (uid === remoteUid) {
+          setRemoteUid(0);
+        }
       },
-      onError: err => {
-        console.log('Agora Error:', err);
+      onError: (err, msg) => {
+        console.error("Agora Error:", err, msg);
       },
-    };
-
-    agoraEngineRef.current?.registerEventHandler({
-      onJoinChannelSuccess: (...args) => {
-        console.log('Agora Success:');
-
-        setIsJoined(true);
+      onLocalVideoStateChanged: (source, state, error) => {
+        console.log("Local video state:", state, error);
       },
-      onUserJoined: (_connection: RtcConnection, uid: number) => {
-        setRemoteUid(uid);
-      },
-      onUserOffline: (_connection: RtcConnection, uid: number) => {
-        setRemoteUid(uid);
-      },
-      onError: err => {
-        console.log('Agora Error:', err);
+      onRemoteVideoStateChanged: (connection, uid, state, reason, elapsed) => {
+        console.log("Remote video state:", uid, state, reason);
       },
     });
-    setTriggerJoin(true);
-  }, []);
+  }, [remoteUid, localUid]);
 
   const setupVideoSDKEngine = useCallback(async () => {
     try {
+      if (agoraEngineRef.current) {
+        console.log("Engine already exists");
+        return;
+      }
+
       const permissions = await getPermission();
-      
-      console.log('setting up engine...');
+      if (!permissions) {
+        console.log("Permissions denied");
+        return;
+      }
+
+      console.log("Creating Agora engine...");
       agoraEngineRef.current = createAgoraRtcEngine();
       const agoraEngine = agoraEngineRef.current;
-      console.log('initializing engine...');
-      await agoraEngine.initialize({ appId: appId });
-      console.log('initialized engine...');
-      console.log('enabling video and starting preview...');
-      agoraEngine.enableVideo();
-      agoraEngine.startPreview();
-      console.log('enabled video and started preview...');
+
+      console.log("Initializing engine...");
+      await agoraEngine.initialize({
+        appId: appId,
+        channelProfile: ChannelProfileType.ChannelProfileCommunication,
+      });
+
+      console.log("Enabling video...");
+      await agoraEngine.enableVideo();
+
+      console.log("Starting preview...");
+      await agoraEngine.startPreview();
+
+      setIsEngineReady(true);
+      setLocalVideoEnabled(true);
+      console.log("Engine setup complete");
     } catch (e) {
-      console.error('Setup error:', e);
+      console.error("Setup error:", e);
+      setIsEngineReady(false);
     }
   }, []);
 
@@ -232,92 +251,87 @@ const AgoraCallModal = ({
       const init = async () => {
         await loadVideoToken();
         await setupVideoSDKEngine();
-        setupEventHandler();
       };
       init();
+    } else {
+      // Clean up when modal closes
+      cleanupAgoraEngine();
     }
+
     return () => {
-      if (isVisible) {
-        cleanupAgoraEngine();
-      }
+      cleanupAgoraEngine();
     };
-  }, [isVisible]);
+  }, [isVisible, loadVideoToken, setupVideoSDKEngine]);
 
   const join = useCallback(async () => {
-    if (!videoToken) {
-      console.log('No video token available');
+    if (!videoToken || !isEngineReady || !agoraEngineRef.current) {
+      console.log("Cannot join:", {
+        videoToken: !!videoToken,
+        isEngineReady,
+        engine: !!agoraEngineRef.current,
+      });
       return;
     }
+
     if (isJoined) {
-      console.log('Already joined');
+      console.log("Already joined");
       return;
     }
-    if (!agoraEngineRef.current) {
-      console.log('Engine not initialized');
-      return;
-    }
+
     try {
-      console.log('joining channel...');
-      if (isHost) {
-        console.log('as host...');
-        console.log('JOIN DEBUG:', { videoToken, channelName, localUid });
-        agoraEngineRef.current?.joinChannel(videoToken, channelName, localUid, {
+      console.log("Joining channel:", { channelName, localUid });
+
+      await agoraEngineRef.current.joinChannel(
+        videoToken,
+        channelName,
+        localUid,
+        {
           channelProfile: ChannelProfileType.ChannelProfileCommunication,
           clientRoleType: ClientRoleType.ClientRoleBroadcaster,
-          publishMicrophoneTrack: true,
-          publishCameraTrack: true,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: true,
-          token: videoToken,
-        });
-        agoraEngineRef.current?.enableLocalVideo(true);
-        agoraEngineRef.current?.enableLocalAudio(true);
-        console.log('joined...');
-      } else {
-        console.log('as non host...');
-        console.log('JOIN DEBUG:', { videoToken, channelName, localUid });
-        await agoraEngineRef.current?.joinChannel(videoToken, channelName, localUid, {
-          channelProfile: ChannelProfileType.ChannelProfileCommunication,
-          clientRoleType: ClientRoleType.ClientRoleAudience,
-          publishMicrophoneTrack: false,
-          publishCameraTrack: false,
-          autoSubscribeAudio: true,
-          autoSubscribeVideo: true,
-        });
-        console.log('joined...');
-      }
+        }
+      );
+
+      console.log("Channel joined successfully");
     } catch (e) {
-      console.log('Join error:', e);
+      console.error("Join error:", e);
     }
-  }, [channelName, isHost, isJoined, localUid, videoToken]);
+  }, [channelName, localUid, videoToken, isEngineReady, isJoined]);
 
   const leave = useCallback(() => {
     try {
-      console.log('leaving...');
+      console.log("leaving...");
       agoraEngineRef.current?.leaveChannel();
       setRemoteUid(0);
       setIsJoined(false);
-      closeModal && closeModal();
-      console.log('left...');
+      console.log("left...");
     } catch (e) {
       console.log(e);
     }
-  }, [closeModal]);
+  }, []);
 
   const cleanupAgoraEngine = () => {
-    agoraEngineRef.current?.unregisterEventHandler(eventHandler.current!);
-    agoraEngineRef.current?.release();
+    console.log("cleaning engine...");
+    if (agoraEngineRef.current) {
+      agoraEngineRef.current?.unregisterEventHandler(eventHandler.current!);
+      agoraEngineRef.current?.release();
+      agoraEngineRef.current = null;
+    }
+    setIsEngineReady(false);
+    setLocalVideoEnabled(false);
+    setIsJoined(false);
+    setRemoteUid(0);
+    console.log("cleaned engine...");
   };
   
 
   useEffect(() => {
-    if (videoToken && triggerJoin) {
-      setTriggerJoin(false);
-      join();
+    if (isEngineReady && videoToken) {
+      setupEventHandler();
+      if (isHost) {
+        join();
+      }
     }
-  }, [triggerJoin, join, videoToken]);
-
-
+  }, [isEngineReady, videoToken, isHost, setupEventHandler, join]);
 
   return (
     <Modal style={{ margin: 0 }} isVisible={isVisible}>
@@ -325,32 +339,37 @@ const AgoraCallModal = ({
         <SafeAreaView
           style={{
             flex: 1,
-          }}>
+          }}
+        >
           <Box
             flex={1}
             backgroundColor="faded"
             position="relative"
-            justifyContent="center">
+            justifyContent="center"
+          >
             <Box flex={1}>
               {isJoined && remoteUid !== 0 ? (
                 <React.Fragment key={remoteUid}>
                   <RtcSurfaceView
                     canvas={{
                       uid: remoteUid,
-                      sourceType: VideoSourceType.VideoSourceCamera,
+                      sourceType: VideoSourceType.VideoSourceRemote,
                     }}
                     style={{
-                      height: '100%',
-                      width: '100%',
+                      height: "100%",
+                      width: "100%",
                     }}
                   />
                 </React.Fragment>
               ) : (
-                <Box paddingTop="l">
+                <Box paddingTop="xl">
                   <Text textAlign="center">
-                    {isJoined && !isHost
-                      ? 'Call from ' + otherUser?.fullName
-                      : 'Call with ' + otherUser?.fullName}
+                    {isJoined
+                      ? "Waiting for " + otherUser?.fullName + "..."
+                      : "Connecting..."}
+                  </Text>
+                  <Text textAlign="center" fontSize={14} color="label" marginTop="s">
+                    {remoteUid !== 0 ? `Remote UID: ${remoteUid}` : "No remote user yet"}
                   </Text>
                 </Box>
               )}
@@ -361,24 +380,38 @@ const AgoraCallModal = ({
                 flexDirection="row"
                 justifyContent="flex-end"
                 marginBottom="l"
-                paddingHorizontal="l">
+                paddingHorizontal="l"
+              >
                 {isVisible && (
                   <Box
                     width={125}
                     height={188}
                     borderRadius={8}
                     overflow="hidden"
-                    backgroundColor="placeholder">
-                    <RtcSurfaceView
-                      canvas={{
-                        uid: localUid,
-                        sourceType: VideoSourceType.VideoSourceCamera,
-                      }}
-                      style={{
-                        height: '100%',
-                        width: '100%',
-                      }}
-                    />
+                    backgroundColor="placeholder"
+                  >
+                    {isEngineReady && localVideoEnabled && !isCameraMuted ? (
+                      <RtcSurfaceView
+                        canvas={{
+                          // uid: 0,
+                          // uid: localUid,
+                          sourceType: VideoSourceType.VideoSourceCamera,
+                        }}
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        flex={1}
+                        justifyContent="center"
+                        alignItems="center"
+                        backgroundColor="placeholder"
+                      >
+                        <Text color="white">Camera Loading...</Text>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </Box>
@@ -390,7 +423,8 @@ const AgoraCallModal = ({
                   backgroundColor="minute_black"
                   paddingHorizontal="l"
                   paddingVertical="mid"
-                  alignItems="center">
+                  alignItems="center"
+                >
                   <Box>
                     <TouchableOpacity onPress={toggleMic}>
                       <Box
@@ -399,8 +433,9 @@ const AgoraCallModal = ({
                         justifyContent="center"
                         alignItems="center"
                         borderRadius={40}
-                        backgroundColor={isMicMuted ? 'label' : 'white'}
-                        overflow="hidden">
+                        backgroundColor={isMicMuted ? "label" : "white"}
+                        overflow="hidden"
+                      >
                         <MicSVG size={24} color="#000" />
                       </Box>
                     </TouchableOpacity>
@@ -414,7 +449,8 @@ const AgoraCallModal = ({
                         alignItems="center"
                         borderRadius={40}
                         overflow="hidden"
-                        backgroundColor="white">
+                        backgroundColor={isCameraMuted ? "label" : "white"}
+                      >
                         <VideoSVG size={24} color="#000" />
                       </Box>
                     </TouchableOpacity>
@@ -429,14 +465,18 @@ const AgoraCallModal = ({
                           alignItems="center"
                           borderRadius={40}
                           overflow="hidden"
-                          backgroundColor="success">
+                          backgroundColor="success"
+                        >
                           <PhoneSVG size={24} color="#FFF" />
                         </Box>
                       </TouchableOpacity>
                     </Box>
                   )}
                   <Box>
-                    <TouchableOpacity onPress={leave}>
+                    <TouchableOpacity onPress={() => {
+                      leave();
+                      closeModal && closeModal();
+                    }}>
                       <Box
                         height={40}
                         width={40}
@@ -444,7 +484,8 @@ const AgoraCallModal = ({
                         alignItems="center"
                         borderRadius={40}
                         overflow="hidden"
-                        backgroundColor="danger">
+                        backgroundColor="danger"
+                      >
                         <PhoneSVG size={24} color="#FFF" />
                       </Box>
                     </TouchableOpacity>

@@ -216,7 +216,7 @@ const PostItem = ({ post, fullDetails, profile, postDelete }: Props) => {
         }}
       />
       <Box
-        borderWidth={1}
+        // borderWidth={1}
         paddingBottom="s"
         borderRadius={8}
         borderColor="minute_black">

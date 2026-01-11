@@ -101,10 +101,10 @@ const AgoraCallModal = ({ isVisible, closeModal, conversation }: Props) => {
       }
 
       // console.log('=== TOKEN REQUEST DEBUG ===');
-      console.log("User ID (original):", user?.id);
-      console.log("Channel Name:", conversation?.id);
-      console.log("Local UID:", localUid);
-      console.log("App ID:", appId);
+      // console.log("User ID (original):", user?.id);
+      // console.log("Channel Name:", conversation?.id);
+      // console.log("Local UID:", localUid);
+      // console.log("App ID:", appId);
       // console.log('========================');
 
       const response = await getVideoToken({
@@ -112,13 +112,13 @@ const AgoraCallModal = ({ isVisible, closeModal, conversation }: Props) => {
         uid: localUid,
       });
 
-      console.log("=== TOKEN RESPONSE ===");
-      console.log("Full response:", JSON.stringify(response, null, 2));
-      console.log(
-        "Token:",
-        (response as any)?.data?.token?.substring(0, 50) + "..."
-      );
-      console.log("=====================");
+      // console.log("=== TOKEN RESPONSE ===");
+      // console.log("Full response:", JSON.stringify(response, null, 2));
+      // console.log(
+      //   "Token:",
+      //   (response as any)?.data?.token?.substring(0, 50) + "..."
+      // );
+      // console.log("=====================");
 
       if (response?.error) {
         const err = response as ErrorData;
@@ -221,7 +221,7 @@ const AgoraCallModal = ({ isVisible, closeModal, conversation }: Props) => {
         return;
       }
 
-      console.log("Creating Agora engine...");
+      // console.log("Creating Agora engine...");
       agoraEngineRef.current = createAgoraRtcEngine();
       const agoraEngine = agoraEngineRef.current;
 
@@ -291,7 +291,7 @@ const AgoraCallModal = ({ isVisible, closeModal, conversation }: Props) => {
         }
       );
 
-      console.log("Channel joined successfully");
+      // console.log("Channel joined successfully");
     } catch (e) {
       console.error("Join error:", e);
     }

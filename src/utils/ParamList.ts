@@ -271,6 +271,19 @@ export interface Work {
   // Add more work properties
 }
 
+export interface Transaction {
+  id: string;
+  paymentId: string;
+  appointmentId: string;
+  consultantId: string;
+  amount: string;
+  currency: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  consultant: Consultant;
+}
+
 // Main navigation stack - all screens in the app
 export type MainStack = {
   // Authentication screens

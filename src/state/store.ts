@@ -31,6 +31,7 @@ import { UploadsApi } from './services/uploads.service';
 import { FreedomApi } from './services/freedom.service';
 import { VideoApi } from './services/video.service';
 import { SettingApi } from './services/setting.service';
+import { transactionApi } from './services/transaction.service';
 
 const persistConfig = {
   key: 'root',
@@ -61,6 +62,7 @@ const reducers = combineReducers({
   [UploadsApi.reducerPath]: UploadsApi.reducer,
   [FreedomApi.reducerPath]: FreedomApi.reducer,
   [VideoApi.reducerPath]: VideoApi.reducer,
+  [transactionApi.reducerPath]: transactionApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducers);
@@ -86,6 +88,7 @@ export const store = configureStore({
       UploadsApi.middleware,
       FreedomApi.middleware,
       VideoApi.middleware,
+      transactionApi.middleware,
     ]),
 });
 

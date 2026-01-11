@@ -11,7 +11,7 @@ const palette = {
   gray: "#f2f2f2",
   
   // Border and text colors
-  border: '#1C1B1B',
+    border: '#A4A3A7',
   placeholder: addAlpha('#1C1B1B', 0.5),
   
   // Light theme colors

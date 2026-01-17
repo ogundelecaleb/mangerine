@@ -91,9 +91,9 @@ export const availabilityApi = createApi({
 
 export const {
   useCreateAvailabilityMutation,
-  useDeleteAvailabilityMutation,
   useGetAvailabilityMutation,
   useGetConsultantAvailabilityMutation,
   useUpdateAvailabilityMutation,
+  useDeleteAvailabilityMutation,
   useGetCurrentAvailabilitySettingsMutation,
 } = availabilityApi; 

@@ -38,6 +38,7 @@ import FavoriteConsultantsScreen from '../screens/Main/FavoriteConsultantsScreen
 import MyBusinessScreen from '../screens/Main/MyBusinessScreen';
 import MyDashboardScreen from '../screens/Main/MyDashboardScreen';
 import AvailabilitySettingsScreen from '../screens/Main/AvailabilitySettingsScreen';
+import AllAvailabilityScreen from '../screens/Main/AllAvailabilityScreen';
 import MeetingPreferenceScreen from '../screens/Main/MeetingPreferenceScreen';
 import PricingScreen from '../screens/Main/PricingScreen';
 import CalendarViewScreen from '../screens/Main/CalendarViewScreen';
@@ -214,6 +215,10 @@ const MainNavigator = () => {
             <Stack.Screen
               name="AvailabilitySettings"
               component={AvailabilitySettingsScreen}
+            />
+            <Stack.Screen
+              name="AllAvailability"
+              component={AllAvailabilityScreen}
             />
             <Stack.Screen
               name="MeetingPreference"

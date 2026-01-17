@@ -254,7 +254,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                 <TouchableOpacity>
                   <Box
                     height={50}
-                    borderWidth={1}
+                    // borderWidth={1}
                     borderRadius={6}
                     width={50}
                     borderColor="minute_black"
@@ -331,9 +331,9 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                           <Text variant="bold" fontSize={18}>
                             {user?.fullName}
                           </Text>
-                          <Text>
+                          {user?.title && <Text>
                             {user?.title} | {user?.userType?.name}
-                          </Text>
+                          </Text>}
                         </Box>
                         <Box
                           flexDirection="row"

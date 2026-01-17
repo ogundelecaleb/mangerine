@@ -35,6 +35,9 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
   const [cancelBooking, { isLoading: cancelLoading }] = useCancelAppointmentMutation();
   const dispatch = useDispatch();
 
+  const isConsultant = user?.id === item?.consultantId;
+  const otherPerson = isConsultant ? item?.user : item?.consultant;
+
   const appointmentStatus = useMemo(() => {
     const appointmentDate = moment(item?.availability?.date);
     const startTime = item?.timeslots?.[0]?.startTime;
@@ -140,15 +143,15 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
                 justifyContent="center"
                 alignItems="center">
                 <Text variant="semibold" fontSize={18}>
-                  {item?.consultant?.fullName?.charAt(0) || 'C'}
+                  {otherPerson?.fullName?.charAt(0) || 'U'}
                 </Text>
               </Box>
               <Box flex={1}>
                 <Text variant="semibold" fontSize={16} numberOfLines={1}>
-                  {item?.consultant?.fullName}
+                  {otherPerson?.fullName}
                 </Text>
                 <Text fontSize={13} color="label" numberOfLines={1}>
-                  {item?.consultant?.title}
+                  {otherPerson?.title || (isConsultant ? 'Consultee' : 'Consultant')}
                 </Text>
               </Box>
             </Box>
@@ -240,7 +243,7 @@ const ConsultationItem = ({ item, onRefresh }: Props) => {
             </Text>
           </Box>
         </Box>
-        {appointmentStatus.status !== 'completed' && (
+        {appointmentStatus.status !== 'completed' && !isConsultant && (
           <Box flexDirection="row" gap="m">
             <Box flex={1}>
               <Button

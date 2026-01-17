@@ -401,6 +401,7 @@ export type MainStack = {
   MyBusiness: undefined;
   Dashboard: undefined;
   AvailabilitySettings: undefined;
+  AllAvailability: undefined;
   MeetingPreference: undefined;
   Pricing: undefined;
   CalendarView: undefined;

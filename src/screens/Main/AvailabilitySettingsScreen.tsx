@@ -363,7 +363,15 @@ const AvailabilitySettingsScreen = ({
                   Availability
                 </Text>
               </Box>
-              <Box padding="s" opacity={0} width={32}></Box>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AllAvailability')}
+                style={{ padding: 8, paddingRight: 0 }}>
+                <MaterialCommunityIcons
+                  name="calendar-month"
+                  size={24}
+                  color={theme.colors.foreground}
+                />
+              </TouchableOpacity>
             </Box>
             <Box flex={1}>
               <ScrollView showsVerticalScrollIndicator={false}>

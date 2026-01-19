@@ -101,6 +101,12 @@ export const consultantsApi = createApi({
         method: 'GET',
       }),
     }),
+    getDashboard: builder.mutation({
+      query: () => ({
+        url: '/dashboard',
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -116,4 +122,5 @@ export const {
   useUpdatePricingMutation,
   useCancelConsultationMutation,
   useGetFavoriteConsultantsMutation,
+  useGetDashboardMutation,
 } = consultantsApi;

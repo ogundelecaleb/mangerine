@@ -27,14 +27,13 @@ const PricingScreen = ({
   const dispatch = useDispatch();
   const [updatePricing, { isLoading }] = useUpdatePricingMutation();
   const { pricingData } = useAuth();
-const pricingInfo = pricingData?.pricing || {}
 
-  console.log('pricingData', pricingData);
+  console.log('pricingDatax', pricingData);
 
   const postPricing = useCallback(async () => {
     try {
       const response = await updatePricing({
-        body: pricingData,
+        body: { currency: "USD", ...pricingData },
       });
 
       if (response?.error) {
@@ -52,6 +51,11 @@ const pricingInfo = pricingData?.pricing || {}
         message: 'Pricing updated',
         type: 'success',
       });
+      dispatch(
+        setPricingData({
+          value: (response as any)?.data?.data?.pricing || pricingData,
+        }),
+      );
       dispatch(
         setAuthTrigger({
           trigger: true,

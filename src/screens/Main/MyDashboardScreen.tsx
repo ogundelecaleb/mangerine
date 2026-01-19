@@ -1,15 +1,19 @@
-import { Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// import { LineChart, BarChart } from 'react-native-chart-kit';
+import { showMessage } from 'react-native-flash-message';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Box from '../../components/Box';
 import Text from '../../components/Text';
 import BaseScreenComponent from '../../components/BaseScreenComponent';
-import { MainStack } from '../../utils/ParamList';
+import { MainStack, ErrorData } from '../../utils/ParamList';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
+import { useGetDashboardMutation } from '../../state/services/consultants.service';
 
 const addAlpha = (color: string, alpha: number) => {
   const hex = color.replace('#', '');
@@ -23,25 +27,53 @@ const MyDashboardScreen = ({
   navigation,
 }: NativeStackScreenProps<MainStack, 'Dashboard'>) => {
   const theme = useTheme<Theme>();
+  const [getDashboard, { isLoading }] = useGetDashboardMutation();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  const loadDashboard = useCallback(async () => {
+    try {
+      const response = await getDashboard({});
+      if (response?.error) {
+        const err = response as ErrorData;
+        showMessage({
+          message:
+            err?.error?.data?.message ||
+            err?.error?.data?.error ||
+            'Something went wrong',
+          type: 'danger',
+        });
+        return;
+      }
+      setDashboardData((response as any)?.data);
+    } catch (error) {
+      console.log('dashboard error:', error);
+    }
+  }, [getDashboard]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboard();
+    }, [loadDashboard]),
+  );
 
   const mainData = useMemo(
     () => [
       {
         title: 'Total Earnings',
-        value: '$1,000,000.00',
+        value: `$${dashboardData?.metrics?.totalEarnings?.toFixed(2) || '0.00'}`,
         icon: <MaterialCommunityIcons name="credit-card" size={24} color="#1A8150" />,
         color: '#1A8150',
       },
       {
         title: 'Success Rate',
-        value: '85%',
+        value: `${dashboardData?.metrics?.successRate || 0}%`,
         icon: <MaterialCommunityIcons name="shield-check" size={24} color="#7C47E7" />,
         color: '#7C47E7',
       },
       {
         title: 'Cancellation',
-        value: '3',
-        subvalue: '($200 loss)',
+        value: `${dashboardData?.metrics?.cancellations || 0}`,
+        subvalue: ` ($${dashboardData?.metrics?.cancellationLoss || 0} loss)`,
         icon: (
           <Box
             justifyContent="center"
@@ -64,14 +96,14 @@ const MyDashboardScreen = ({
       },
       {
         title: 'Returning Clients Rate',
-        value: '60%',
+        value: `${dashboardData?.metrics?.returningClientRate || 0}%`,
         icon: (
           <MaterialCommunityIcons name="account" size={24} color="#9287A0" />
         ),
         color: '#9287A0',
       },
     ],
-    [],
+    [dashboardData],
   );
 
   return (
@@ -109,6 +141,11 @@ const MyDashboardScreen = ({
               <Box padding="s" opacity={0} width={32}></Box>
             </Box>
             <Box flex={1}>
+              {isLoading ? (
+                <Box alignItems="center" padding="l">
+                  <ActivityIndicator size="small" color={theme.colors.foreground_primary} />
+                </Box>
+              ) : (
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Box paddingVertical="m" paddingHorizontal="l">
                   <Box>
@@ -171,7 +208,54 @@ const MyDashboardScreen = ({
                       ))}
                     </Box>
                   </Box>
-                  <Box marginTop="l">
+                  {/* <Box marginTop="l">
+                    <Box marginBottom="l" flexDirection="row" justifyContent="space-between" alignItems="center">
+                      <Box>
+                        <Text fontSize={10} color="label">
+                          Total Earnings
+                        </Text>
+                        <Text fontSize={20} variant="semibold">
+                          ${dashboardData?.metrics?.totalEarnings?.toFixed(2) || '0.00'}
+                        </Text>
+                      </Box>
+                    </Box>
+                    {dashboardData?.earningsChart && (
+                      <LineChart
+                        data={{
+                          labels: dashboardData.earningsChart.map((d: any) => d.month),
+                          datasets: [
+                            {
+                              data: dashboardData.earningsChart.map((d: any) => d.amount),
+                            },
+                          ],
+                        }}
+                        width={Dimensions.get('window').width - 48}
+                        height={220}
+                        chartConfig={{
+                          backgroundColor: theme.colors.background,
+                          backgroundGradientFrom: theme.colors.background,
+                          backgroundGradientTo: theme.colors.background,
+                          decimalPlaces: 0,
+                          color: (opacity = 1) => `rgba(124, 71, 231, ${opacity})`,
+                          labelColor: (opacity = 1) => theme.colors.label,
+                          style: {
+                            borderRadius: 16,
+                          },
+                          propsForDots: {
+                            r: '4',
+                            strokeWidth: '2',
+                            stroke: '#7C47E7',
+                          },
+                        }}
+                        bezier
+                        style={{
+                          marginVertical: 8,
+                          borderRadius: 16,
+                        }}
+                      />
+                    )}
+                  </Box> */}
+                  {/* <Box marginTop="l">
                     <Box marginBottom="l">
                       <Text fontSize={10} color="label">
                         Statistics
@@ -180,21 +264,82 @@ const MyDashboardScreen = ({
                         Consultation Overview
                       </Text>
                     </Box>
-                    <Box height={200} backgroundColor="faded"></Box>
-                  </Box>
-                  <Box marginTop="l">
-                    <Box marginBottom="l">
-                      <Text fontSize={10} color="label">
-                        Scheduled Consultation
+                    {dashboardData?.consultationStats && (
+                      <BarChart
+                        data={{
+                          labels: dashboardData.consultationStats.map((d: any) => d.month),
+                          datasets: [
+                            {
+                              data: dashboardData.consultationStats.map((d: any) => d.successful),
+                              color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
+                            },
+                            {
+                              data: dashboardData.consultationStats.map((d: any) => d.cancelled),
+                              color: (opacity = 1) => `rgba(244, 67, 54, ${opacity})`,
+                            },
+                          ],
+                          legend: ['Successful', 'Cancelled'],
+                        }}
+                        width={Dimensions.get('window').width - 48}
+                        height={220}
+                        chartConfig={{
+                          backgroundColor: theme.colors.background,
+                          backgroundGradientFrom: theme.colors.background,
+                          backgroundGradientTo: theme.colors.background,
+                          decimalPlaces: 0,
+                          color: (opacity = 1) => `rgba(124, 71, 231, ${opacity})`,
+                          labelColor: (opacity = 1) => theme.colors.label,
+                          style: {
+                            borderRadius: 16,
+                          },
+                        }}
+                        style={{
+                          marginVertical: 8,
+                          borderRadius: 16,
+                        }}
+                      />
+                    )}
+                  </Box> */}
+                  {/* <Box marginTop="l" marginBottom="l">
+                    <Box
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      marginBottom="m">
+                      <Box>
+                        <Text fontSize={10} color="label">
+                          Scheduled Consultation
+                        </Text>
+                        <Text fontSize={20} variant="semibold">
+                          {dashboardData?.scheduledConsultations || 0}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize={10} color="danger" textAlign="right">
+                          Consultations Left
+                        </Text>
+                        <Text fontSize={20} variant="semibold" color="danger" textAlign="right">
+                          {dashboardData?.consultationsLeft || 0}
+                        </Text>
+                      </Box>
+                    </Box>
+                    <Box
+                      height={120}
+                      borderRadius={8}
+                      backgroundColor="faded"
+                      justifyContent="center"
+                      alignItems="center">
+                      <Text fontSize={48} variant="bold" color="foreground_primary">
+                        {dashboardData?.completionPercentage || 0}%
                       </Text>
-                      <Text fontSize={12} variant="semibold">
-                        100
+                      <Text fontSize={12} color="label">
+                        Completed: {dashboardData?.scheduledConsultations - dashboardData?.consultationsLeft || 0}
                       </Text>
                     </Box>
-                    <Box height={200} backgroundColor="faded"></Box>
-                  </Box>
+                  </Box> */}
                 </Box>
               </ScrollView>
+              )}
             </Box>
           </Box>
         </SafeAreaView>

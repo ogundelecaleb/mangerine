@@ -124,6 +124,39 @@ const ChatScreen = ({
         : activeConversation?.consultant,
     [activeConversation, user],
   );
+
+  const isWithinConsultationPeriod = useMemo(() => {
+    if (!route?.params?.appointment) {
+      // If accessed from messages list, check lastAppointment
+      if (!activeConversation?.lastAppointment) return true;
+      const lastAppt = activeConversation.lastAppointment;
+      // For now, allow messaging if there's a conversation (consultant can always message)
+      return true;
+    }
+    const appointment = route.params.appointment;
+    if (!appointment.timeslots?.[0] || !appointment.availability?.date) return false;
+    
+    const appointmentDate = appointment.availability.date;
+    const startTime = appointment.timeslots[0].startTime;
+    const endTime = appointment.timeslots[0].endTime;
+    
+    const startDateTime = moment(`${appointmentDate} ${startTime}`, 'YYYY-MM-DD HH:mm:ss');
+    const endDateTime = moment(`${appointmentDate} ${endTime}`, 'YYYY-MM-DD HH:mm:ss');
+    const now = moment();
+    
+    return now.isBetween(startDateTime, endDateTime);
+  }, [route?.params?.appointment, activeConversation]);
+
+  const isConsultee = useMemo(
+    () => activeConversation?.userId === user?.id,
+    [activeConversation, user],
+  );
+
+  const canSendMessage = useMemo(
+    () => !isConsultee || isWithinConsultationPeriod,
+    [isConsultee, isWithinConsultationPeriod],
+  );
+
   const orderedMessages = useMemo(
     () => orderBy(activeLocalConversation?.messages || [], 'createdAt', 'desc'),
     [activeLocalConversation],
@@ -362,6 +395,13 @@ const ChatScreen = ({
   );
 
   const sendMessage = useCallback(() => {
+    if (!canSendMessage) {
+      showMessage({
+        message: 'You can only send messages during your scheduled consultation period',
+        type: 'warning',
+      });
+      return;
+    }
     console.log('sendMessage called', {
       message: message?.trim(),
       hasActiveConversation: !!activeConversation,
@@ -391,7 +431,7 @@ const ChatScreen = ({
     });
     setMessage('');
     setAttachments([]);
-  }, [activeConversation, message, otherUser?.id, socket, attachments]);
+  }, [activeConversation, message, otherUser?.id, socket, attachments, canSendMessage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -697,14 +737,27 @@ const ChatScreen = ({
                     </ScrollView>
                   </Box>
                 ) : null}
+                {!canSendMessage && (
+                  <Box
+                    paddingVertical="m"
+                    paddingHorizontal="l"
+                    backgroundColor="danger"
+                    opacity={0.1}>
+                    <Text fontSize={12} color="danger" textAlign="center">
+                      You can only send messages during your scheduled consultation period
+                    </Text>
+                  </Box>
+                )}
                 <Box
                   paddingVertical="mid"
                   gap="mid"
                   paddingHorizontal="l"
                   flexDirection="row"
-                  alignItems="center">
+                  alignItems="center"
+                  opacity={canSendMessage ? 1 : 0.5}>
                   <Box>
                     <TouchableOpacity
+                      disabled={!canSendMessage}
                       onPress={() => menuRef.current?.show()}
                       style={{ paddingVertical: 8, paddingLeft: 0 }}>
                       {uploadLoading || signingLoading || deleteLoading ? (
@@ -731,13 +784,14 @@ const ChatScreen = ({
                       alignItems="stretch"
                       backgroundColor="faded_border">
                       <TextInput
+                        editable={canSendMessage}
                         style={{
                           flex: 1,
                           fontSize: 12,
                           paddingHorizontal: 12,
                           fontFamily: regular.fontFamily,
                         }}
-                        placeholder="Write a message"
+                        placeholder={canSendMessage ? "Write a message" : "Messaging disabled outside consultation period"}
                         placeholderTextColor={placeholder}
                         value={message}
                         onChangeText={setMessage}
@@ -745,12 +799,12 @@ const ChatScreen = ({
                     </Box>
                   </Box>
                   <Box flexDirection="row" gap="mid" alignItems="center">
-                    <TouchableOpacity>
+                    <TouchableOpacity disabled={!canSendMessage}>
                       <Box paddingVertical="m">
                         <MicSVG size={24} color={foreground_primary} />
                       </Box>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={sendMessage}>
+                    <TouchableOpacity disabled={!canSendMessage} onPress={sendMessage}>
                       <Box paddingVertical="m">
                         <SendSVG size={24} color={foreground_primary} />
                       </Box>

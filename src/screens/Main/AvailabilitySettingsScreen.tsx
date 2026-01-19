@@ -1,4 +1,4 @@
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,87 +17,209 @@ import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../utils/theme';
 import { setAuthTrigger } from '../../state/reducers/user.reducer';
 import { useCreateAvailabilityMutation, useGetCurrentAvailabilitySettingsMutation } from '../../state/services/availability.service';
-
-const convertTime12to24 = (time12h: string) => {
-  const [time, modifier] = time12h.split(' ');
-  let [hours, minutes] = time.split(':');
-  if (hours === '12') {
-    hours = '00';
-  }
-  if (modifier === 'PM') {
-    hours = parseInt(hours, 10) + 12 + '';
-  }
-  return `${hours}:${minutes}`;
-};
+import { addAlpha } from '../../utils/helpers';
 
 const days = [
-  'Sunday',
   'Monday',
   'Tuesday',
   'Wednesday',
   'Thursday',
   'Friday',
   'Saturday',
+  'Sunday',
 ];
 
-// Simple AvailabilityAccordion component placeholder
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let min = 0; min < 60; min += 30) {
+      const time = moment().hour(hour).minute(min);
+      times.push({
+        title: time.format('hh:mm A'),
+        value: time.format('HH:mm'),
+      });
+    }
+  }
+  return times;
+};
+
+const TimePickerModal = ({ visible, onClose, onSelect, title }: any) => {
+  const theme = useTheme<Theme>();
+  const times = generateTimeOptions();
+  
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <Box flex={1} backgroundColor="transparent" justifyContent="flex-end">
+        <TouchableOpacity 
+          style={{ flex: 1 }} 
+          activeOpacity={1} 
+          onPress={onClose}
+        />
+        <Box 
+          backgroundColor="background" 
+          borderTopLeftRadius={20} 
+          borderTopRightRadius={20}
+          maxHeight={400}>
+          <Box 
+            padding="m" 
+            borderBottomWidth={1} 
+            borderBottomColor="border"
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center">
+            <Text variant="semibold" fontSize={16}>{title}</Text>
+            <TouchableOpacity onPress={onClose}>
+              <MaterialCommunityIcons name="close" size={24} color={theme.colors.foreground} />
+            </TouchableOpacity>
+          </Box>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {times.map((time) => (
+              <TouchableOpacity
+                key={time.value}
+                onPress={() => {
+                  onSelect(time.value);
+                  onClose();
+                }}>
+                <Box 
+                  padding="m" 
+                  borderBottomWidth={1} 
+                  borderBottomColor="faded_border">
+                  <Text>{time.title}</Text>
+                </Box>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </Box>
+      </Box>
+    </Modal>
+  );
+};
+
 const AvailabilityAccordion = ({
   day,
   active,
   toggleDay,
   addSlot,
-  updateSlot,
   removeSlot,
   slots,
-}: any) => (
-  <Box
-    marginVertical="s"
-    borderWidth={1}
-    borderColor="border"
-    borderRadius={8}
-    padding="m">
-    <TouchableOpacity onPress={toggleDay}>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center">
-        <Text variant="medium">{day}</Text>
-        <MaterialCommunityIcons
-          name={active ? 'chevron-up' : 'chevron-down'}
-          size={20}
-        />
-      </Box>
-    </TouchableOpacity>
-    {active && (
-      <Box marginTop="m">
-        <TouchableOpacity onPress={addSlot}>
-          <Box
-            backgroundColor="primary"
-            padding="s"
-            borderRadius={6}
-            alignItems="center">
-            <Text color="white">Add Time Slot</Text>
+  onEditSlot,
+}: any) => {
+  const theme = useTheme<Theme>();
+  
+  return (
+    <Box
+      marginVertical="s"
+      borderWidth={1}
+      borderColor={active ? 'primary' : 'border'}
+      borderRadius={8}
+      overflow="hidden"
+      style={{
+        backgroundColor: active ? addAlpha(theme.colors.primary, 0.02) : 'transparent',
+      }}>
+      <TouchableOpacity onPress={toggleDay}>
+        <Box
+          padding="m"
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center">
+          <Box flexDirection="row" alignItems="center" gap="s">
+            <Box
+              width={20}
+              height={20}
+              borderRadius={10}
+              borderWidth={2}
+              borderColor={active ? 'primary' : 'border'}
+              justifyContent="center"
+              alignItems="center"
+              style={{
+                backgroundColor: active ? theme.colors.primary : 'transparent',
+              }}>
+              {active && (
+                <MaterialCommunityIcons name="check" size={12} color="#FFF" />
+              )}
+            </Box>
+            <Text variant="medium" fontSize={16}>{day}</Text>
           </Box>
-        </TouchableOpacity>
-        {slots?.map((slot: any, index: number) => (
-          <Box
-            key={index}
-            flexDirection="row"
-            alignItems="center"
-            gap="s"
-            marginTop="s">
-            <Text flex={1}>
-              {slot.from[0]} - {slot.to[0]}
-            </Text>
-            <TouchableOpacity onPress={() => removeSlot(index)}>
-              <MaterialCommunityIcons name="delete" size={20} color="red" />
+          <MaterialCommunityIcons
+            name={active ? 'chevron-up' : 'chevron-down'}
+            size={20}
+            color={theme.colors.foreground}
+          />
+        </Box>
+      </TouchableOpacity>
+      {active && (
+        <Box paddingHorizontal="m" paddingBottom="m">
+          <Box gap="s">
+            {slots?.map((slot: any, index: number) => (
+              <Box
+                key={index}
+                flexDirection="row"
+                alignItems="center"
+                gap="s"
+                padding="s"
+                borderRadius={6}
+                backgroundColor="faded_border">
+                <TouchableOpacity 
+                  style={{ flex: 1 }}
+                  onPress={() => onEditSlot(index, 'from')}>
+                  <Box 
+                    padding="s" 
+                    borderRadius={4}
+                    backgroundColor="background">
+                    <Text fontSize={14}>{moment(slot.from, 'HH:mm').format('hh:mm A')}</Text>
+                  </Box>
+                </TouchableOpacity>
+                <MaterialCommunityIcons name="arrow-right" size={16} color={theme.colors.label} />
+                <TouchableOpacity 
+                  style={{ flex: 1 }}
+                  onPress={() => onEditSlot(index, 'to')}>
+                  <Box 
+                    padding="s" 
+                    borderRadius={4}
+                    backgroundColor="background">
+                    <Text fontSize={14}>{moment(slot.to, 'HH:mm').format('hh:mm A')}</Text>
+                  </Box>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => removeSlot(index)}>
+                  <Box
+                    width={32}
+                    height={32}
+                    borderRadius={16}
+                    backgroundColor="faded_danger"
+                    justifyContent="center"
+                    alignItems="center">
+                    <MaterialCommunityIcons 
+                      name="delete-outline" 
+                      size={16} 
+                      color={theme.colors.danger} 
+                    />
+                  </Box>
+                </TouchableOpacity>
+              </Box>
+            ))}
+          </Box>
+          <Box marginTop="m">
+            <TouchableOpacity onPress={addSlot}>
+              <Box
+                padding="m"
+                borderRadius={6}
+                borderWidth={1}
+                borderColor="primary"
+                borderStyle="dashed"
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                gap="s">
+                <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+                <Text color="primary" variant="medium">Add Time Slot</Text>
+              </Box>
             </TouchableOpacity>
           </Box>
-        ))}
-      </Box>
-    )}
-  </Box>
-);
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 const AvailabilitySettingsScreen = ({
   navigation,
@@ -112,10 +234,15 @@ const AvailabilitySettingsScreen = ({
     {
       day: string;
       enabled: boolean;
-      slots: { from: string[]; to: string[] }[];
-      duration: string[];
+      slots: { from: string; to: string }[];
     }[]
   >([]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<{
+    day: string;
+    index: number;
+    field: 'from' | 'to';
+  } | null>(null);
 
   const loadCurrentSettings = useCallback(async () => {
     try {
@@ -123,7 +250,17 @@ const AvailabilitySettingsScreen = ({
       if (response?.data?.data) {
         const { timezone: tz, availability } = response.data.data;
         setTimezone(tz || 'gmt');
-        setTimeSlots(availability || []);
+        
+        const formattedSlots = availability?.map((av: any) => ({
+          day: av.day,
+          enabled: av.enabled,
+          slots: av.slots?.map((s: any) => ({
+            from: moment(s.from[0], 'hh:mm A').format('HH:mm'),
+            to: moment(s.to[0], 'hh:mm A').format('HH:mm'),
+          })) || [],
+        })) || [];
+        
+        setTimeSlots(formattedSlots);
         if (availability?.[0]?.duration?.[0]) {
           setPreferredDur(availability[0].duration[0]);
         }
@@ -141,7 +278,6 @@ const AvailabilitySettingsScreen = ({
     () =>
       days.map(d => {
         const dates = [];
-        // Generate dates for next 3 months to ensure we have future dates
         for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
           const targetMonth = moment().add(monthOffset, 'month');
           const daysInMonth = targetMonth.daysInMonth();
@@ -169,23 +305,21 @@ const AvailabilitySettingsScreen = ({
 
   const preparedDates = useMemo(() => {
     const datesWithSlots = timeSlots
-      .filter(x => x.enabled) // Only process enabled days
+      .filter(x => x.enabled)
       .map(x => {
         const foundDay = sortedDates.find(
           xx => xx.day.toLowerCase() === x.day.toLowerCase(),
         );
 
-        return foundDay?.dates?.map(sx => {
-          return {
-            date: sx.date,
-            timeslots: x?.slots?.map(xp => ({
-              startTime: xp?.from?.[0],
-              endTime: xp?.to?.[0],
-              duration: Number(preferredDur),
-              isAvailable: true,
-            })),
-          };
-        });
+        return foundDay?.dates?.map(sx => ({
+          date: sx.date,
+          timeslots: x?.slots?.map(xp => ({
+            startTime: moment(xp.from, 'HH:mm').format('HH:mm'),
+            endTime: moment(xp.to, 'HH:mm').format('HH:mm'),
+            duration: Number(preferredDur),
+            isAvailable: true,
+          })),
+        }));
       })
       ?.flat()
       ?.filter(x => {
@@ -198,88 +332,90 @@ const AvailabilitySettingsScreen = ({
   }, [preferredDur, sortedDates, timeSlots]);
 
   const addSlot = useCallback(
-    (day: string, duration: string) => {
-      if (!day || !duration) {
-        return;
-      }
+    (day: string) => {
       const freshSlots = [...timeSlots];
       const slotDayExists = freshSlots.findIndex(t => t.day === day);
+      
+      const lastSlot = slotDayExists > -1 
+        ? freshSlots[slotDayExists].slots[freshSlots[slotDayExists].slots.length - 1]
+        : null;
+      
+      const startTime = lastSlot 
+        ? moment(lastSlot.to, 'HH:mm').add(30, 'minutes').format('HH:mm')
+        : '09:00';
+      
+      const endTime = moment(startTime, 'HH:mm')
+        .add(Number(preferredDur), 'minutes')
+        .format('HH:mm');
+      
       if (slotDayExists > -1) {
-        const previousSlot = convertTime12to24(
-          freshSlots[slotDayExists].slots?.[
-            freshSlots[slotDayExists].slots.length - 1
-          ]?.to?.[0] || '07:00',
-        );
-        const fromDateString =
-          moment().format('YYYY-MM-DD') + ' ' + previousSlot;
-        freshSlots[slotDayExists].slots.push({
-          from: [moment(fromDateString).format('hh:mm a')],
-          to: [
-            moment(fromDateString)
-              .add(Number(duration), 'minutes')
-              .format('hh:mm a'),
-          ],
-        });
+        freshSlots[slotDayExists].slots.push({ from: startTime, to: endTime });
         freshSlots[slotDayExists].enabled = true;
-        setTimeSlots(freshSlots);
       } else {
-        const previousSlot = '07:00';
-        const fromDateString =
-          moment().format('YYYY-MM-DD') + ' ' + previousSlot;
         freshSlots.push({
           day,
-          duration: [duration],
           enabled: true,
-          slots: [
-            {
-              from: [moment(fromDateString).format('hh:mm a')],
-              to: [
-                moment(fromDateString)
-                  .add(Number(duration), 'minutes')
-                  .format('hh:mm a'),
-              ],
-            },
-          ],
+          slots: [{ from: startTime, to: endTime }],
         });
-        setTimeSlots(freshSlots);
       }
+      setTimeSlots(freshSlots);
     },
-    [timeSlots],
+    [timeSlots, preferredDur],
   );
 
   const removeSlot = useCallback(
     (day: string, index: number) => {
-      if (!day || index < 0) {
-        return;
-      }
       const freshSlots = [...timeSlots];
       const slotDayExists = freshSlots.findIndex(t => t.day === day);
-      freshSlots[slotDayExists].slots = [
-        ...freshSlots[slotDayExists].slots,
-      ].filter((_, ind) => ind !== index);
-      setTimeSlots(freshSlots);
+      if (slotDayExists > -1) {
+        freshSlots[slotDayExists].slots = freshSlots[slotDayExists].slots.filter(
+          (_, ind) => ind !== index
+        );
+        if (freshSlots[slotDayExists].slots.length === 0) {
+          freshSlots[slotDayExists].enabled = false;
+        }
+        setTimeSlots(freshSlots);
+      }
     },
     [timeSlots],
   );
 
   const updateSlot = useCallback(
-    (day: string, index: number, time: string, duration: string) => {
-      if (!day || index < 0) {
-        return;
-      }
+    (day: string, index: number, field: 'from' | 'to', time: string) => {
       const freshSlots = [...timeSlots];
       const slotDayExists = freshSlots.findIndex(t => t.day === day);
-      if (slotDayExists > -1) {
-        freshSlots[slotDayExists].slots[index].from[0] =
-          moment(time).format('hh:mm a');
-        setTimeSlots(freshSlots);
-        freshSlots[slotDayExists].slots[index].to[0] = moment(time)
-          .add(Number(duration), 'minutes')
-          .format('hh:mm a');
+      if (slotDayExists > -1 && freshSlots[slotDayExists].slots[index]) {
+        freshSlots[slotDayExists].slots[index][field] = time;
         setTimeSlots(freshSlots);
       }
     },
     [timeSlots],
+  );
+
+  const handleEditSlot = useCallback((day: string, index: number, field: 'from' | 'to') => {
+    setEditingSlot({ day, index, field });
+    setShowTimePicker(true);
+  }, []);
+
+  const handleTimeSelect = useCallback((time: string) => {
+    if (editingSlot) {
+      updateSlot(editingSlot.day, editingSlot.index, editingSlot.field, time);
+      setEditingSlot(null);
+    }
+  }, [editingSlot, updateSlot]);
+
+  const toggleDay = useCallback(
+    (day: string) => {
+      const freshSlots = [...timeSlots];
+      const existingIndex = freshSlots.findIndex(x => x.day === day);
+      if (existingIndex > -1) {
+        freshSlots[existingIndex].enabled = !freshSlots[existingIndex].enabled;
+        setTimeSlots(freshSlots);
+      } else {
+        addSlot(day);
+      }
+    },
+    [timeSlots, addSlot],
   );
 
   const newAvailability = useCallback(async () => {
@@ -289,8 +425,11 @@ const AvailabilitySettingsScreen = ({
         availability_settings: timeSlots.map(slot => ({
           day: slot.day,
           enabled: slot.enabled,
-          slots: slot.slots,
-          duration: slot.duration
+          slots: slot.slots.map(s => ({
+            from: [moment(s.from, 'HH:mm').format('hh:mm A')],
+            to: [moment(s.to, 'HH:mm').format('hh:mm A')],
+          })),
+          duration: [preferredDur],
         })),
         availabilities: preparedDates,
       };
@@ -328,8 +467,9 @@ const AvailabilitySettingsScreen = ({
         }),
       );
     } catch (error) {
+      console.log('Error creating availability:', error);
     }
-  }, [createAvailabil, dispatch, preparedDates, timezone]);
+  }, [createAvailabil, dispatch, preparedDates, timezone, timeSlots, preferredDur]);
 
   return (
     <BaseScreenComponent>
@@ -447,34 +587,18 @@ const AvailabilitySettingsScreen = ({
                       onSelect={v => setPreferredDur(v)}
                     />
                   </Box>
-                  <Box>
+                  <Box marginTop="l">
                     {days?.map(d => (
                       <AvailabilityAccordion
                         key={d}
                         day={d}
                         active={timeSlots.find(x => x.day === d)?.enabled}
-                        toggleDay={() => {
-                          const freshSlots = [...timeSlots];
-                          const existinIndex = freshSlots.findIndex(
-                            x => x.day === d,
-                          );
-                          if (existinIndex > -1) {
-                            freshSlots[existinIndex].enabled =
-                              !freshSlots[existinIndex].enabled;
-                            setTimeSlots(freshSlots);
-                          } else {
-                            addSlot(d, preferredDur || '60');
-                          }
-                        }}
-                        addSlot={() => {
-                          addSlot(d, preferredDur || '60');
-                        }}
-                        updateSlot={(index: number, value: string) => {
-                          updateSlot(d, index, value, preferredDur || '60');
-                        }}
-                        removeSlot={(index: number) => {
-                          removeSlot(d, index);
-                        }}
+                        toggleDay={() => toggleDay(d)}
+                        addSlot={() => addSlot(d)}
+                        onEditSlot={(index: number, field: 'from' | 'to') => 
+                          handleEditSlot(d, index, field)
+                        }
+                        removeSlot={(index: number) => removeSlot(d, index)}
                         slots={timeSlots.find(x => x.day === d)?.slots}
                       />
                     ))}
@@ -501,6 +625,16 @@ const AvailabilitySettingsScreen = ({
           </Box>
         </SafeAreaView>
       </Box>
+      
+      <TimePickerModal
+        visible={showTimePicker}
+        onClose={() => {
+          setShowTimePicker(false);
+          setEditingSlot(null);
+        }}
+        onSelect={handleTimeSelect}
+        title={editingSlot ? `Select ${editingSlot.field === 'from' ? 'Start' : 'End'} Time` : 'Select Time'}
+      />
     </BaseScreenComponent>
   );
 };

@@ -38,6 +38,7 @@ const SignupScreen = ({ navigation }: Props) => {
   const [rememberMe, setRememberMe] = useState(false);
   const { foreground } = useThemeColors();
 
+  
   const { control, handleSubmit, formState: { errors } } = useForm<SignupForm>({
     resolver: yupResolver(signupSchema),
     defaultValues: {
@@ -294,6 +295,7 @@ const SignupScreen = ({ navigation }: Props) => {
                       <Box flexDirection="row" gap="s" alignItems="center">
                         <Checkbox
                           checked={rememberMe}
+                          size={14}
                           onPress={() => setRememberMe(!rememberMe)}
                         />
                         <Text>

@@ -7,12 +7,15 @@ export const usersApi = createApi({
   reducerPath: 'UsersApi',
   baseQuery: fetchBaseQuery({
     baseUrl: `${getUrl()}/users`,
-    prepareHeaders: async (headers, { getState }) => {
-      // By default, if we have a token in the store, let's use that for authenticated requests
+    prepareHeaders: async (headers, { getState, endpoint }) => {
       const state = getState() as RootState;
       const token = state?.user?.token;
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
+      }
+      // Don't set Content-Type for FormData endpoints
+      if (endpoint === 'addConsultancy' || endpoint === 'updateProfilePic' || endpoint === 'updateProfileBanner' || endpoint === 'updateProfileVideo') {
+        headers.delete('Content-Type');
       }
       return headers;
     },

@@ -92,7 +92,7 @@ const AddConsultancyScreen = ({
             type: assets[0].mimeType || 'image/jpeg',
           } as any);
         }
-        const response = await addCon(body);
+        const response = await addCon({ body });
         console.log('consultancy response', JSON.stringify(response));
         if (response?.error) {
           const err = response as ErrorData;

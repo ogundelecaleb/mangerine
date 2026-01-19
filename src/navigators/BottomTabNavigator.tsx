@@ -12,6 +12,8 @@ import HomeScreen from '../screens/Tabs/HomeScreen';
 import ConsultantScreen from '../screens/Tabs/ConsultantScreen';
 import PlaceholderScreen from '../screens/PlaceholderScreen';
 import MessageScreen from '../screens/Tabs/MessageScreen';
+import HomeSVG from '@/assets/svgs/HomeSVG';
+import HeadphoneSVG from '@/assets/svgs/HeadphoneSVG';
 
 const Tab = createBottomTabNavigator<BottomTabList>();
 
@@ -29,9 +31,14 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({ focused }) =>
             focused ? (
-              <MaterialCommunityIcons name="home" size={20} color={theme.colors.primary} />
+              // <MaterialCommunityIcons name="home" size={20} color={theme.colors.primary} />
+              <HomeSVG size={20} color={theme.colors.primary} />
             ) : (
-              <MaterialCommunityIcons name="home-outline" size={20} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="home-outline"
+                size={20}
+                color={theme.colors.primary}
+              />
             ),
         }}
         component={HomeScreen}
@@ -40,13 +47,16 @@ const BottomTabNavigator = () => {
         name="Consultant"
         component={ConsultantScreen}
         options={{
-          tabBarIcon: ({}) => (
-            <MaterialCommunityIcons
-              name="headset"
-              size={20}
-              color={theme.colors.primary}
-            />
-          ),
+          tabBarIcon: ({ focused }) =>
+            focused ? (
+              <HeadphoneSVG size={20} color={theme.colors.primary} />
+            ) : (
+              <MaterialCommunityIcons
+                name="headset"
+                size={20}
+                color={theme.colors.primary}
+              />
+            ),
           title: 'Consultation',
         }}
       />
@@ -100,9 +110,17 @@ const BottomTabNavigator = () => {
         options={{
           tabBarIcon: ({ focused }) =>
             focused ? (
-              <MaterialCommunityIcons name="account" size={20} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="account"
+                size={20}
+                color={theme.colors.primary}
+              />
             ) : (
-              <MaterialCommunityIcons name="account-outline" size={20} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="account-outline"
+                size={20}
+                color={theme.colors.primary}
+              />
             ),
         }}
       />

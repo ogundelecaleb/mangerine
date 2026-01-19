@@ -105,13 +105,13 @@ const FinishRegistrationScreen = ({ navigation, route }: Props) => {
           interests: selectedInterests,
           userType: [selectedUserType?.id || '1'],
         }).unwrap();
+          navigation.navigate('SignupAvatar');
 
         if (result.status === "success") {
           dispatch(setCredentials({
             user: result.data.user,
             token: result.data.token,
           }));
-          navigation.navigate('SignupAvatar');
         }
       } catch (error: any) {
         showMessage({

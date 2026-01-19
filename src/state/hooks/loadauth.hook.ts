@@ -365,13 +365,13 @@ export const useLoadAuth = () => {
       }
       dispatch(
         setPricingData({
-          value: (response as any)?.data?.data?.pricing,
+          value: (response as any)?.data?.data?.consultant?.pricing,
         }),
       );
     } catch (error) {
       console.log('postPricing error:', error);
     }
-  }, [getPricing, dispatch]);
+  }, [getPricing, dispatch, user]);
 
   return {
     loadAuth: runAuth,

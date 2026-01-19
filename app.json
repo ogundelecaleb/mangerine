@@ -4,7 +4,7 @@
     "slug": "mangerine",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/white-logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
@@ -28,7 +28,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/white-logo.png",
         "backgroundColor": "#111D4A"
       },
       "splash": {

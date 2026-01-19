@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import moment from 'moment';
 import { Image } from 'expo-image';
+import { showMessage } from 'react-native-flash-message';
 
 import Box from './Box';
 import Text from './Text';
@@ -30,14 +31,32 @@ const MessageItem = ({ unread, item }: Props) => {
     [item, user],
   );
 
+  const isConsultee = item?.userId === user?.id;
+  const canAccessChat = useMemo(() => {
+    if (!isConsultee) return true;
+    if (!item?.lastAppointment) return false;
+    
+    const lastAppt = item.lastAppointment;
+    // For messages list, only allow if there's an active/upcoming appointment
+    return lastAppt.status === 'UPCOMING' || lastAppt.status === 'CONFIRMED';
+  }, [isConsultee, item]);
+
+  const handlePress = () => {
+    if (!canAccessChat) {
+      showMessage({
+        message: 'You can only access chat during scheduled consultation periods',
+        type: 'warning',
+      });
+      return;
+    }
+    navigation.navigate('ChatScreen', {
+      conversation: item,
+    });
+  };
+
   return (
     <Box>
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate('ChatScreen', {
-            conversation: item,
-          })
-        }>
+      <TouchableOpacity onPress={handlePress}>
         <Box
           flexDirection="row"
           borderRadius={8}

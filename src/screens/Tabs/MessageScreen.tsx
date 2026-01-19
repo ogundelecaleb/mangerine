@@ -21,6 +21,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { showMessage } from 'react-native-flash-message';
 import { uniqBy } from 'lodash';
 import { Image } from 'expo-image';
+import moment from 'moment';
 
 import Box from '../../components/Box';
 import Text from '../../components/Text';
@@ -295,10 +296,28 @@ const MessageScreen = ({}: Props) => {
                       gap="mid"
                       paddingBottom="xl">
                       {uniqueConsultantAppointments.map(c => {
+                        const isWithinPeriod = (() => {
+                          if (!c.timeslots?.[0] || !c.availability?.date) return false;
+                          const appointmentDate = c.availability.date;
+                          const startTime = c.timeslots[0].startTime;
+                          const endTime = c.timeslots[0].endTime;
+                          const startDateTime = moment(`${appointmentDate} ${startTime}`, 'YYYY-MM-DD HH:mm:ss');
+                          const endDateTime = moment(`${appointmentDate} ${endTime}`, 'YYYY-MM-DD HH:mm:ss');
+                          return moment().isBetween(startDateTime, endDateTime);
+                        })();
+
                         return (
                           <TouchableOpacity
                             key={c.consultantId}
                             onPress={() => {
+                              if (!isWithinPeriod) {
+                                showMessage({
+                                  message: 'You can only message this consultant during your scheduled consultation period',
+                                  type: 'warning',
+                                });
+                                return;
+                              }
+                              actionRef.current?.hide();
                               setTimeout(() => {
                                 mainNavigation.navigate('ChatScreen', {
                                   user: c.consultant,

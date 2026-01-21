@@ -97,19 +97,22 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
   );
 
   const items3 = useMemo(
-    () => [
-      {
-        title: 'My Business',
-        icon: <Ionicons name="bookmarks-outline" size={16} color={theme.colors.foreground} />,
-        onPress: () => {
-          setShowMenu(false);
-          setTimeout(() => {
-            mainNavigation.navigate('MyBusiness');
-          }, 900);
+    () => {
+      if (!user?.isConsultant) return [];
+      return [
+        {
+          title: 'My Business',
+          icon: <Ionicons name="bookmarks-outline" size={16} color={theme.colors.foreground} />,
+          onPress: () => {
+            setShowMenu(false);
+            setTimeout(() => {
+              mainNavigation.navigate('MyBusiness');
+            }, 900);
+          },
         },
-      },
-    ],
-    [theme.colors.foreground, mainNavigation],
+      ];
+    },
+    [theme.colors.foreground, mainNavigation, user?.isConsultant],
   );
 
   useEffect(() => {
@@ -367,7 +370,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                         </Box>
                       </Box>
                     </Box>
-                    <Box
+                    {/* <Box
                       marginTop="mid"
                       borderWidth={1}
                       overflow="hidden"
@@ -388,7 +391,7 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                           </TouchableOpacity>
                         ))}
                       </Box>
-                    </Box>
+                    </Box> */}
                     <Box
                       marginTop="mid"
                       borderWidth={1}
@@ -411,28 +414,30 @@ const BottomTabHeader = ({ onSearch, searchValue, setSearchValue }: Props) => {
                         ))}
                       </Box>
                     </Box>
-                    <Box
-                      marginTop="mid"
-                      borderWidth={1}
-                      overflow="hidden"
-                      paddingVertical="l"
-                      paddingHorizontal="m"
-                      borderColor="faded_border"
-                      borderRadius={8}>
-                      <Box gap="mid">
-                        {items3.map(i => (
-                          <TouchableOpacity onPress={i.onPress} key={i.title}>
-                            <Box
-                              alignItems="center"
-                              flexDirection="row"
-                              gap="mid">
-                              {i.icon}
-                              <Text>{i.title}</Text>
-                            </Box>
-                          </TouchableOpacity>
-                        ))}
+                    {items3.length > 0 && (
+                      <Box
+                        marginTop="mid"
+                        borderWidth={1}
+                        overflow="hidden"
+                        paddingVertical="l"
+                        paddingHorizontal="m"
+                        borderColor="faded_border"
+                        borderRadius={8}>
+                        <Box gap="mid">
+                          {items3.map(i => (
+                            <TouchableOpacity onPress={i.onPress} key={i.title}>
+                              <Box
+                                alignItems="center"
+                                flexDirection="row"
+                                gap="mid">
+                                {i.icon}
+                                <Text>{i.title}</Text>
+                              </Box>
+                            </TouchableOpacity>
+                          ))}
+                        </Box>
                       </Box>
-                    </Box>
+                    )}
                   </Box>
                 </ScrollView>
               </Box>

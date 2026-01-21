@@ -7,6 +7,7 @@ import BaseScreenComponent from '../../components/BaseScreenComponent';
 import Box from '../../components/Box';
 import Text from '../../components/Text';
 import { useThemeColors } from '../../hooks/useTheme';
+import { SafeAreaView } from 'react-native';
 
 type Props = NativeStackScreenProps<MainStack, 'Settings'>;
 
@@ -62,6 +63,8 @@ const SettingsScreen = ({ navigation }: Props) => {
     <BaseScreenComponent>
       <Box flex={1} backgroundColor="background">
         {/* Header */}
+                <SafeAreaView style={{ flex: 1 }}>
+        
         <Box 
           flexDirection="row" 
           alignItems="center" 
@@ -122,6 +125,7 @@ const SettingsScreen = ({ navigation }: Props) => {
             ))}
           </Box>
         </ScrollView>
+        </SafeAreaView>
       </Box>
     </BaseScreenComponent>
   );

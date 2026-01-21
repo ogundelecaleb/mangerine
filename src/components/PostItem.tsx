@@ -216,10 +216,17 @@ const PostItem = ({ post, fullDetails, profile, postDelete }: Props) => {
         }}
       />
       <Box
-        // borderWidth={1}
         paddingBottom="s"
         borderRadius={8}
-        borderColor="minute_black">
+        backgroundColor="white"
+        shadowColor="foreground"
+        shadowOffset={{
+          width: 0,
+          height: 1,
+        }}
+        shadowOpacity={0.1}
+        shadowRadius={4}
+        elevation={2}>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('PostDetails', {

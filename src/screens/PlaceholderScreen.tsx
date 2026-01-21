@@ -25,9 +25,9 @@ const PlaceholderScreen = ({ route }: Props) => {
             {title}
           </Text>
           
-          <Text variant="regular" fontSize={16} textAlign="center" color="label">
+          {/* <Text variant="regular" fontSize={16} textAlign="center" color="label">
             This screen will be implemented in the next migration phase
-          </Text>
+          </Text> */}
           
           <Button 
             displayText="Coming Soon" 

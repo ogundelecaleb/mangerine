@@ -106,7 +106,6 @@ const BookConsultationScreen = ({
   );
   const dispatch = useDispatch();
 
-  console.log(" route?.params?.consultant",  route?.params?.consultant)
   const availableMarkedDate = useMemo(() => {
     const transformedAvailability = availability.map(availabledate => ({
       [availabledate.date]: {
@@ -151,7 +150,6 @@ const BookConsultationScreen = ({
         startDate: moment(activeMonth).startOf('month').format('YYYY/MM/DD'),
         endDate: moment(activeMonth).endOf('month').format('YYYY/MM/DD'),
       };
-      console.log('Getting availability with params:', params);
       
       const response = await getAvailability({
         params,
@@ -168,7 +166,6 @@ const BookConsultationScreen = ({
         });
         return;
       }
-      console.log('Availability response:', response);
       setAvailability((response as any)?.data?.data || []);
     } catch (error) {
       console.log('get availability error', JSON.stringify(error));

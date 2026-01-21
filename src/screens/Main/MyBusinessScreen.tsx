@@ -49,12 +49,12 @@ const MyBusinessScreen = ({
             navigation.navigate('AvailabilitySettings');
           },
         },
-        {
-          title: 'Meeting Preference',
-          onPress: () => {
-            navigation.navigate('MeetingPreference');
-          },
-        },
+        // {
+        //   title: 'Meeting Preference',
+        //   onPress: () => {
+        //     navigation.navigate('MeetingPreference');
+        //   },
+        // },
         {
           title: 'Pricing',
           onPress: () => {

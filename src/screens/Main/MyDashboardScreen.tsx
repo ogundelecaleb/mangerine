@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-// import { LineChart, BarChart } from 'react-native-chart-kit';
+import { LineChart, BarChart } from 'react-native-chart-kit';
 import { showMessage } from 'react-native-flash-message';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -208,7 +208,7 @@ const MyDashboardScreen = ({
                       ))}
                     </Box>
                   </Box>
-                  {/* <Box marginTop="l">
+                  <Box marginTop="l">
                     <Box marginBottom="l" flexDirection="row" justifyContent="space-between" alignItems="center">
                       <Box>
                         <Text fontSize={10} color="label">
@@ -229,14 +229,14 @@ const MyDashboardScreen = ({
                             },
                           ],
                         }}
-                        width={Dimensions.get('window').width - 48}
-                        height={220}
+                        width={Dimensions.get('window').width - 8}
+                        height={210}
                         chartConfig={{
                           backgroundColor: theme.colors.background,
                           backgroundGradientFrom: theme.colors.background,
                           backgroundGradientTo: theme.colors.background,
                           decimalPlaces: 0,
-                          color: (opacity = 1) => `rgba(124, 71, 231, ${opacity})`,
+                          color: (opacity = 1) => `rgba(17,29,74, ${opacity})`,
                           labelColor: (opacity = 1) => theme.colors.label,
                           style: {
                             borderRadius: 16,
@@ -244,7 +244,7 @@ const MyDashboardScreen = ({
                           propsForDots: {
                             r: '4',
                             strokeWidth: '2',
-                            stroke: '#7C47E7',
+                            stroke: '#111D4A',
                           },
                         }}
                         bezier
@@ -254,8 +254,8 @@ const MyDashboardScreen = ({
                         }}
                       />
                     )}
-                  </Box> */}
-                  {/* <Box marginTop="l">
+                  </Box>
+                  <Box marginTop="l">
                     <Box marginBottom="l">
                       <Text fontSize={10} color="label">
                         Statistics
@@ -299,7 +299,7 @@ const MyDashboardScreen = ({
                         }}
                       />
                     )}
-                  </Box> */}
+                  </Box>
                   {/* <Box marginTop="l" marginBottom="l">
                     <Box
                       flexDirection="row"
